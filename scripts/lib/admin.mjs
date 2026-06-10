@@ -44,6 +44,12 @@ async function call(method, path, body) {
   return data
 }
 
+// The edge-function runner executes SQL as this per-tenant role with no
+// service GUC set, so RLS "service" checks must also accept it by name.
+export const PROJECT_ID = '0515e4e2-e195-4018-ab19-f18aae213e2a'
+export const FUNC_ROLE = `tenant_${PROJECT_ID.replaceAll('-', '_')}_func`
+export const SVC = `(public.is_service_role() OR current_user = '${FUNC_ROLE}')`
+
 export const api = {
   /** SELECT-only raw SQL. */
   sql: (query) => call('POST', '/v1/db/sql', { sql: query }),
@@ -58,6 +64,7 @@ export const api = {
   createIndex: (table, column, unique = false) =>
     call('POST', `/v1/db/schema/tables/${table}/indexes`, { column, unique }),
   createPolicy: (table, policy) => call('POST', `/v1/db/schema/tables/${table}/policies`, policy),
+  dropPolicy: (table, name) => call('DELETE', `/v1/db/schema/tables/${table}/policies/${name}`),
   toggleRLS: (table, enabled) => call('POST', `/v1/db/schema/tables/${table}/rls`, { enabled }),
 
   // --- Data (service-role REST) ---
