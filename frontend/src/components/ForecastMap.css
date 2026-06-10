@@ -1,0 +1,99 @@
+.signal-card {
+  position: relative;
+  padding: 22px;
+  overflow: hidden;
+  background: rgba(255, 250, 241, 0.77);
+  border: 1px solid rgba(24, 33, 28, 0.15);
+  border-radius: 34px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.signal-card::before {
+  position: absolute;
+  inset: -100px -130px auto auto;
+  width: 240px;
+  height: 240px;
+  content: "";
+  background: rgba(240, 122, 62, 0.2);
+  border-radius: 50%;
+}
+
+.map-topline {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.district-map {
+  position: relative;
+  min-height: 340px;
+  padding: 18px;
+  background:
+    linear-gradient(120deg, transparent 49%, rgba(24, 33, 28, 0.08) 50%, transparent 51%),
+    linear-gradient(35deg, transparent 47%, rgba(24, 33, 28, 0.06) 48%, transparent 50%),
+    #ecdfc9;
+  background-size: 160px 160px, 110px 110px, auto;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+}
+
+.district {
+  position: absolute;
+  padding: 9px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 800;
+  background: rgba(255, 250, 241, 0.8);
+  border: 1px solid rgba(24, 33, 28, 0.14);
+  border-radius: 999px;
+}
+
+.pin {
+  position: absolute;
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  color: #fffaf1;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 900;
+  background: var(--signal);
+  border: 5px solid rgba(255, 250, 241, 0.72);
+  border-radius: 50% 50% 50% 12px;
+  box-shadow: 0 20px 30px rgba(164, 71, 32, 0.28);
+  transform: rotate(-45deg);
+}
+
+.pin span {
+  transform: rotate(45deg);
+}
+
+.pin.secondary-pin {
+  width: 46px;
+  height: 46px;
+  opacity: 0.78;
+}
+
+.card-footer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 620px) {
+  .card-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .district-map {
+    min-height: 310px;
+  }
+}
