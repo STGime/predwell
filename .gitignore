@@ -1,6 +1,9 @@
 .env
 .env.*
 !.env.example
+# frontend/.env holds only public values (gateway URL, publishable key,
+# project id) — the bundle ships them anyway.
+!frontend/.env
 node_modules/
 dist/
 .DS_Store
