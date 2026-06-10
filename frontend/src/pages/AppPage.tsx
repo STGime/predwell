@@ -200,6 +200,19 @@ export function AppPage() {
                         </div>
                       )}
                       {m.fit_note && <p className="match-fit-note">{m.fit_note}</p>}
+                      {listing.enrichment?.geo && (
+                        <p className="form-note match-geo">
+                          {(['transit', 'kita', 'school', 'park', 'supermarket'] as const)
+                            .map((k) => {
+                              const m2 = listing.enrichment?.geo?.[`${k}_m`]
+                              if (m2 == null) return null
+                              const mins = Math.max(1, Math.round(m2 / 80))
+                              return `${t(`prox.${k}` as TranslationKey)} ${mins}′`
+                            })
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </p>
+                      )}
                     </div>
                     <select
                       className={`status-select status-${m.status}`}

@@ -2,11 +2,66 @@
 // inserts matches. Runs on a 5-minute schedule; also invocable manually.
 //
 // Scoring (0–100): budget fit 40 + rooms 20 + district preference 25 +
-// freshness 15. Matches with score >= 50 are inserted. The
+// freshness 15, then ± adjustments for the profile's feature/proximity wishes
+// (clamped 0–100). Matches with score >= 50 are inserted. The
 // (search_profile_id, listing_id) pair is deduplicated here — the DDL
 // surface has no composite unique constraints.
 
 const MIN_SCORE = 50
+
+// Walking-distance thresholds (metres) for "close to" proximity wishes.
+const PROXIMITY_THRESHOLD = { kita: 800, school: 800, park: 800, supermarket: 800, transit: 400 }
+const FEATURE_BONUS_CAP = 12
+const PROXIMITY_BONUS_CAP = 16
+
+function asObj(v) {
+  if (!v) return {}
+  if (typeof v === 'string') {
+    try {
+      return JSON.parse(v)
+    } catch {
+      return {}
+    }
+  }
+  return v
+}
+
+// Layer the profile's feature/proximity wishes onto the base score using the
+// listing's enrichment flags + geo distances. Bonuses for satisfied wishes;
+// penalties for hard violations (sublet / WBS / swap when not wanted).
+function scoreAdjustments(profile, listing) {
+  const crit = asObj(profile.features)
+  const wantFeat = asObj(crit.features)
+  const wantProx = asObj(crit.proximity)
+  const enr = asObj(listing.enrichment)
+  const geo = asObj(enr.geo)
+  let adj = 0
+
+  // Hard violations.
+  if (wantFeat.no_temporary && enr.temporary) adj -= 25
+  if (enr.swap_only) adj -= 40
+  if (enr.requires_wbs && !wantFeat.wbs_ok) adj -= 15
+
+  // Feature satisfaction (parking/balcony/lift/garden/pets/furnished/unfurnished).
+  let featBonus = 0
+  for (const k of ['parking', 'balcony', 'lift', 'garden', 'pets_ok', 'furnished']) {
+    if (wantFeat[k] && enr[k]) featBonus += 4
+  }
+  if (wantFeat.unfurnished && enr.furnished === false) featBonus += 4
+  adj += Math.min(FEATURE_BONUS_CAP, featBonus)
+
+  // Proximity satisfaction.
+  let proxBonus = 0
+  for (const type of Object.keys(PROXIMITY_THRESHOLD)) {
+    const wantedDist = geo[`${type}_m`]
+    if (wantProx[type] && wantedDist != null && wantedDist <= PROXIMITY_THRESHOLD[type]) {
+      proxBonus += 5
+    }
+  }
+  adj += Math.min(PROXIMITY_BONUS_CAP, proxBonus)
+
+  return adj
+}
 
 function scoreListing(profile, listing, preferredDistricts) {
   let score = 0
@@ -39,18 +94,19 @@ function scoreListing(profile, listing, preferredDistricts) {
   if (hours <= 6) score += 15
   else if (hours <= 48) score += Math.round(15 * (1 - (hours - 6) / 42))
 
+  score += scoreAdjustments(profile, listing)
   return Math.max(0, Math.min(100, score))
 }
 
 globalThis.handler = async (req, ctx) => {
   const profiles = await ctx.db.sql(
-    'SELECT id, user_id, budget_max, rooms_min, district_ids FROM search_profiles WHERE is_active = true',
+    'SELECT id, user_id, budget_max, rooms_min, district_ids, features FROM search_profiles WHERE is_active = true',
   )
   if (profiles.length === 0) return { ok: true, matched: 0, profiles: 0 }
 
   // Candidates: active listings first seen in the last 7 days.
   const listings = await ctx.db.sql(`
-    SELECT id, district_id, price_warm, rooms, first_seen_at
+    SELECT id, district_id, price_warm, rooms, first_seen_at, enrichment
     FROM listings
     WHERE is_active = true AND first_seen_at > now() - interval '7 days'
   `)

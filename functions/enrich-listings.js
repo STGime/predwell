@@ -45,6 +45,11 @@ const CLASSIFY_SYS =
   'swap_only (bool — Tauschwohnung), ' +
   'cooperative (bool — Genossenschaft/Genossenschaftsanteile), ' +
   'commission_free (bool — provisionsfrei), ' +
+  'parking (bool — Stellplatz/Garage/Tiefgarage/Parkplatz), ' +
+  'balcony (bool — Balkon/Terrasse/Loggia), ' +
+  'lift (bool — Aufzug/Fahrstuhl), ' +
+  'garden (bool — Garten/Gartennutzung), ' +
+  'pets_ok (bool — Haustiere erlaubt), ' +
   'deposit_months (number|null — Kaution in months if stated), ' +
   'fit_note (string — ONE short English sentence: the single most important thing a renter should know, e.g. "Furnished 6-month sublet" or "Standard unfurnished long-term let"). ' +
   'Base it only on the text; use false/null when unstated. No prose outside the JSON.'
@@ -89,6 +94,50 @@ function extractDescription(html) {
     .replace(/&#039;/g, "'")
     .replace(/&[a-z]+;/g, ' ')
   return chunk.replace(/\s+/g, ' ').trim().slice(0, 1500) || null
+}
+
+// WG-Gesucht detail pages embed the map point as `lat":52.x` / `lng":13.x`.
+// Constrain to Berlin's coordinate ranges to avoid false matches.
+function extractCoords(html) {
+  const lat = html.match(/lat"\s*:\s*"?(5[12]\.\d{3,})/)?.[1]
+  const lng = html.match(/lng"\s*:\s*"?(1[34]\.\d{3,})/)?.[1]
+  if (!lat || !lng) return null
+  return { lat: Number(lat), lng: Number(lng) }
+}
+
+const AMENITY_TYPES = ['kita', 'school', 'park', 'transit', 'supermarket']
+
+function haversineM(lat1, lng1, lat2, lng2) {
+  const R = 6371000
+  const toRad = (d) => (d * Math.PI) / 180
+  const dLat = toRad(lat2 - lat1)
+  const dLng = toRad(lng2 - lng1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
+}
+
+// Nearest amenity (metres) per type, from geo_amenities within a ~1.5 km box.
+// Pure bbox SQL + JS haversine — no PostGIS dependency.
+async function computeGeoDistances(ctx, lat, lng) {
+  const d = 0.012 // ~1.3 km lat / ~0.8 km lng box — covers the ≤800 m thresholds
+  const rows = await ctx.db.sql(
+    `SELECT type, lat, lng FROM geo_amenities
+     WHERE lat BETWEEN $1 AND $2 AND lng BETWEEN $3 AND $4`,
+    [lat - d, lat + d, lng - d, lng + d],
+  )
+  const geo = {}
+  for (const type of AMENITY_TYPES) {
+    let best = null
+    for (const a of rows) {
+      if (a.type !== type) continue
+      const m = haversineM(lat, lng, Number(a.lat), Number(a.lng))
+      if (best === null || m < best) best = m
+    }
+    geo[`${type}_m`] = best
+  }
+  return geo
 }
 
 // Down-rank (don't delete) matches the flags reveal as poor fits.
@@ -215,9 +264,19 @@ globalThis.handler = async (req, ctx) => {
         ctx.log.warn('detail fetch failed', { id: l.id, status: res.status })
         continue
       }
-      const description = extractDescription(await res.text())
+      const html = await res.text()
+      const description = extractDescription(html)
+      const coords = extractCoords(html)
       try {
         const flags = await classify(apiKey, l, description)
+        // Geo: extract coords from the page, compute nearest-amenity distances.
+        if (coords) {
+          flags.geo = await computeGeoDistances(ctx, coords.lat, coords.lng)
+          await ctx.db.sql(
+            'UPDATE listings SET lat = $2, lng = $3, geocoded_at = now() WHERE id = $1',
+            [l.id, coords.lat, coords.lng],
+          )
+        }
         await ctx.db.sql(
           "UPDATE listings SET enrichment = $2, enriched_at = now(), enrich_level = 'detail' WHERE id = $1",
           [l.id, JSON.stringify(flags)],

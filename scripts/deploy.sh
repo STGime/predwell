@@ -24,6 +24,7 @@ fi
 if [[ "$STEP" == "all" || "$STEP" == "functions" ]]; then
   echo "==> Deploying edge functions"
   eurobase edge-functions deploy free-report      -f functions/free-report.js      --no-verify-jwt
+  eurobase edge-functions deploy parse-search     -f functions/parse-search.js     --no-verify-jwt
   eurobase edge-functions deploy scrape-wg-gesucht -f functions/scrape-wg-gesucht.js --no-verify-jwt
   eurobase edge-functions deploy match-engine     -f functions/match-engine.js     --no-verify-jwt
   eurobase edge-functions deploy enrich-listings  -f functions/enrich-listings.js  --no-verify-jwt

@@ -135,6 +135,12 @@
   line-height: 1.4;
 }
 
+.match-geo {
+  margin-top: 6px;
+  color: var(--forest);
+  font-weight: 600;
+}
+
 .status-select {
   min-height: 42px;
   width: auto;

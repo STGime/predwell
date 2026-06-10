@@ -54,6 +54,14 @@ export interface SearchProfile {
   created_at: string
 }
 
+export interface ListingGeo {
+  kita_m?: number | null
+  school_m?: number | null
+  park_m?: number | null
+  transit_m?: number | null
+  supermarket_m?: number | null
+}
+
 export interface Listing {
   id: string
   source: string
@@ -65,6 +73,7 @@ export interface Listing {
   size_sqm: number | null
   rooms: number | null
   first_seen_at: string
+  enrichment: ({ geo?: ListingGeo } & Record<string, unknown>) | null
 }
 
 export interface ListingFlags {
