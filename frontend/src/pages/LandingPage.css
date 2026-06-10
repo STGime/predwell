@@ -17,6 +17,45 @@
   line-height: 1.55;
 }
 
+/* Trust band — credibility row for the IS24 case (fast / source / EU). */
+.trust-band {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 56px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.trust-item {
+  display: grid;
+  gap: 6px;
+  padding: 22px 24px;
+  background: rgba(255, 250, 241, 0.72);
+}
+
+.trust-item strong {
+  font-family: var(--font-sans);
+  font-size: 1.02rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.trust-item span {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .trust-band {
+    grid-template-columns: 1fr;
+  }
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -50,14 +89,37 @@
 
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
 }
 
 .feature-card {
   display: grid;
   gap: 10px;
   align-content: start;
+}
+
+.feature-card.feature-primary {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.feature-card.feature-primary .feature-label {
+  color: var(--mint);
+}
+
+.feature-card.feature-primary .feature-name {
+  color: var(--paper-strong);
+}
+
+.feature-card.feature-primary .panel-copy {
+  color: rgba(255, 250, 241, 0.82);
+}
+
+.feature-card.feature-primary .feature-example {
+  color: var(--paper-strong);
+  background: rgba(255, 250, 241, 0.12);
+  border-left-color: var(--signal);
 }
 
 .feature-label {

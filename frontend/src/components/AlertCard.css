@@ -1,0 +1,125 @@
+.alert-card {
+  position: relative;
+  padding: 22px;
+  overflow: hidden;
+  background: rgba(255, 250, 241, 0.82);
+  border: 1px solid rgba(24, 33, 28, 0.15);
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.alert-card::before {
+  position: absolute;
+  inset: -110px -120px auto auto;
+  width: 240px;
+  height: 240px;
+  content: '';
+  background: rgba(240, 122, 62, 0.22);
+  border-radius: 50%;
+}
+
+.alert-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.alert-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--signal-dark);
+  font-weight: 800;
+}
+
+.alert-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--signal);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(240, 122, 62, 0.5);
+  animation: alert-pulse 1.8s infinite;
+}
+
+@keyframes alert-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(240, 122, 62, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(240, 122, 62, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(240, 122, 62, 0); }
+}
+
+.alert-body {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+}
+
+.alert-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.alert-score {
+  font-family: var(--font-sans);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--signal-dark);
+}
+
+.alert-score-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.alert-posted {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.alert-title {
+  font-family: var(--font-sans);
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.alert-meta {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+.alert-fit {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.alert-cta {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--signal-dark);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+}

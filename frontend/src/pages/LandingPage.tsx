@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { eb } from '../lib/eurobase'
 import { useI18n } from '../lib/i18n'
-import { ForecastMap } from '../components/ForecastMap'
+import { AlertCard } from '../components/AlertCard'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
 import './LandingPage.css'
 
@@ -109,24 +109,32 @@ export function LandingPage() {
             <p className="free-note">{t('hero.freeNote')}</p>
           </div>
 
-          <ForecastMap
-            toplineLeft={t('forecast.topline.left')}
-            toplineRight={t('forecast.topline.right')}
-            districts={[
-              { name: 'Wedding', top: '18%', left: '11%' },
-              { name: 'Friedrichshain', top: '39%', right: '8%' },
-              { name: 'Neukölln', bottom: '16%', left: '16%' },
-            ]}
-            pins={[
-              { percent: 82, top: '42%', left: '43%' },
-              { percent: 61, top: '16%', right: '20%', secondary: true },
-            ]}
-            metrics={[
-              { value: '14d', label: t('forecast.metric.window') },
-              { value: '37', label: t('forecast.metric.feeds') },
-              { value: '1st', label: t('forecast.metric.contact') },
-            ]}
+          <AlertCard
+            topline={t('alert.topline')}
+            liveLabel={t('alert.live')}
+            matchLabel={t('alert.match')}
+            title={t('alert.title')}
+            meta={t('alert.meta')}
+            fitNote={t('alert.fit')}
+            source={t('alert.source')}
+            cta={t('alert.cta')}
+            postedLabel={t('alert.posted')}
           />
+        </section>
+
+        <section className="trust-band" aria-label="Why Predwell">
+          <div className="trust-item">
+            <strong>{t('trust.fast')}</strong>
+            <span>{t('trust.fast.sub')}</span>
+          </div>
+          <div className="trust-item">
+            <strong>{t('trust.source')}</strong>
+            <span>{t('trust.source.sub')}</span>
+          </div>
+          <div className="trust-item">
+            <strong>{t('trust.eu')}</strong>
+            <span>{t('trust.eu.sub')}</span>
+          </div>
         </section>
 
         <section className="sections" id="how-it-works" aria-label="How Predwell works">
@@ -154,17 +162,23 @@ export function LandingPage() {
           <p className="eyebrow">{t('features.eyebrow')}</p>
           <h2 className="features-title">{t('features.title')}</h2>
           <div className="feature-grid">
+            <div className="panel feature-card feature-primary">
+              <span className="feature-label">{t('features.alerts.label')}</span>
+              <strong className="feature-name">{t('features.alerts.title')}</strong>
+              <p className="panel-copy">{t('features.alerts.copy')}</p>
+              <p className="feature-example">{t('features.alerts.example')}</p>
+            </div>
+            <div className="panel feature-card">
+              <span className="feature-label">{t('features.hood.label')}</span>
+              <strong className="feature-name">{t('features.hood.title')}</strong>
+              <p className="panel-copy">{t('features.hood.copy')}</p>
+              <p className="feature-example">{t('features.hood.example')}</p>
+            </div>
             <div className="panel feature-card">
               <span className="feature-label">{t('features.digest.label')}</span>
               <strong className="feature-name">{t('features.digest.title')}</strong>
               <p className="panel-copy">{t('features.digest.copy')}</p>
               <p className="feature-example">{t('features.digest.example')}</p>
-            </div>
-            <div className="panel feature-card">
-              <span className="feature-label">{t('features.alerts.label')}</span>
-              <strong className="feature-name">{t('features.alerts.title')}</strong>
-              <p className="panel-copy">{t('features.alerts.copy')}</p>
-              <p className="feature-example">{t('features.alerts.example')}</p>
             </div>
           </div>
         </section>

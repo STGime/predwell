@@ -5,21 +5,40 @@ export const translations = {
   'nav.tagline': { en: 'Berlin renter intelligence', de: 'Berliner Mieter-Intelligenz' },
 
   // Landing hero
-  'hero.eyebrow': { en: 'Predictive apartment search', de: 'Vorausschauende Wohnungssuche' },
+  'hero.eyebrow': { en: 'Agentic AI · real-time apartment alerts for Berlin', de: 'Agentic AI · Echtzeit-Wohnungsalerts für Berlin' },
   'hero.title': {
-    en: "Find Your Berlin Apartment Before It's Listed",
-    de: 'Finde deine Berliner Wohnung, bevor sie inseriert wird',
+    en: 'Be first to the Berlin apartment that fits you.',
+    de: 'Sei der Erste bei der Berliner Wohnung, die zu dir passt.',
   },
   'hero.lead': {
-    en: 'Predwell aggregates listings from Immoscout, agencies, and local feeds, matches them with historical availability data, and predicts where apartments are likely to open next — so you can contact landlords first.',
-    de: 'Predwell sammelt Inserate von Immoscout, Hausverwaltungen und lokalen Quellen, gleicht sie mit historischen Verfügbarkeitsdaten ab und sagt vorher, wo als Nächstes Wohnungen frei werden — damit du Vermieter zuerst kontaktierst.',
+    en: 'Predwell watches every major listing portal and agency feed in Berlin for you. The moment a flat matches your profile, you get an instant alert with a direct link — while there’s still time to reach the agent. Plus neighborhood insight on every match and a daily read on where the market is moving.',
+    de: 'Predwell beobachtet alle großen Wohnungsportale und Makler-Feeds in Berlin für dich. Sobald eine Wohnung zu deinem Profil passt, bekommst du sofort einen Alert mit Direktlink — solange noch Zeit bleibt, den Anbieter zu erreichen. Dazu Kiez-Insights zu jedem Treffer und täglich ein Überblick, wohin sich der Markt bewegt.',
   },
   'hero.cta.free': { en: 'Try Free – No Credit Card Required', de: 'Kostenlos testen – ohne Kreditkarte' },
   'hero.cta.how': { en: 'See how it works', de: 'So funktioniert es' },
   'hero.freeNote': {
-    en: 'Run one free apartment report first. No card, no checkout, no commitment.',
-    de: 'Starte mit einem kostenlosen Wohnungs-Report. Keine Karte, kein Checkout, keine Verpflichtung.',
+    en: 'Run one free market report first. No card, no checkout, no commitment.',
+    de: 'Starte mit einem kostenlosen Markt-Report. Keine Karte, kein Checkout, keine Verpflichtung.',
   },
+
+  // Hero alert-card mock
+  'alert.topline': { en: 'New match', de: 'Neuer Treffer' },
+  'alert.live': { en: 'Live', de: 'Live' },
+  'alert.match': { en: 'match', de: 'Treffer' },
+  'alert.title': { en: '2-room flat in Kreuzberg, 58 m²', de: '2-Zimmer-Wohnung in Kreuzberg, 58 m²' },
+  'alert.meta': { en: '€1,240 warm · 2 rooms · available Aug 1', de: '1.240 € warm · 2 Zimmer · frei ab 1. Aug.' },
+  'alert.fit': { en: 'Unfurnished long-term let, no WBS needed.', de: 'Unbefristet, unmöbliert, kein WBS nötig.' },
+  'alert.source': { en: '', de: '' },
+  'alert.cta': { en: 'View the listing', de: 'Inserat ansehen' },
+  'alert.posted': { en: 'posted 90s ago', de: 'vor 90 Sek.' },
+
+  // Trust band
+  'trust.eu': { en: 'EU-hosted & GDPR-native', de: 'EU-gehostet & DSGVO-konform' },
+  'trust.eu.sub': { en: 'Built on EU infrastructure (Scaleway, Paris). No US cloud, no Schrems II risk.', de: 'Auf EU-Infrastruktur (Scaleway, Paris). Keine US-Cloud, kein Schrems-II-Risiko.' },
+  'trust.source': { en: 'Straight to the listing', de: 'Direkt zum Inserat' },
+  'trust.source.sub': { en: 'Every alert links to the original listing and its agent — we send renters to the source, never around it.', de: 'Jeder Alert verlinkt das Original-Inserat und seinen Anbieter — wir schicken Mieter zur Quelle, nicht daran vorbei.' },
+  'trust.fast': { en: 'Minutes, not hours', de: 'Minuten statt Stunden' },
+  'trust.fast.sub': { en: 'Berlin flats are gone in hours. We alert you within minutes of a listing going live.', de: 'Berliner Wohnungen sind in Stunden weg. Wir alarmieren dich Minuten nach Veröffentlichung.' },
 
   // Forecast card
   'forecast.topline.left': { en: 'Availability forecast', de: 'Verfügbarkeits-Prognose' },
@@ -29,30 +48,30 @@ export const translations = {
   'forecast.metric.contact': { en: 'landlord contact', de: 'Vermieter-Kontakt' },
 
   // How it works
-  'how.title': { en: 'Signal beats scrolling.', de: 'Signal schlägt Scrollen.' },
+  'how.title': { en: 'Your agent, not your second job.', de: 'Dein Agent, nicht dein Zweitjob.' },
   'how.copy': {
-    en: 'Instead of refreshing listing portals all day, Predwell turns scattered rental data into a ranked watchlist of buildings, neighborhoods, and agencies that are most likely to surface your next apartment.',
-    de: 'Statt den ganzen Tag Portale zu aktualisieren, macht Predwell aus verstreuten Mietdaten eine priorisierte Watchlist von Häusern, Kiezen und Verwaltungen, bei denen deine nächste Wohnung am wahrscheinlichsten auftaucht.',
+    en: 'Predwell is an agentic AI that works the Berlin market around the clock — polling every feed, matching each new listing to your profile, enriching it with neighborhood data, and alerting you the instant something fits. You set your criteria once; the agent does the rest.',
+    de: 'Predwell ist eine agentische KI, die rund um die Uhr den Berliner Markt bearbeitet — fragt jeden Feed ab, gleicht jedes neue Inserat mit deinem Profil ab, reichert es mit Kiez-Daten an und alarmiert dich in dem Moment, in dem etwas passt. Du legst deine Kriterien einmal fest; den Rest erledigt der Agent.',
   },
-  'how.step1.title': { en: 'Collect the market', de: 'Den Markt erfassen' },
+  'how.step1.title': { en: 'Watch every feed', de: 'Jeden Feed beobachten' },
   'how.step1.copy': {
-    en: 'Pull listings from Immoscout, agencies, property managers, and niche local sources.',
-    de: 'Inserate von Immoscout, Maklern, Hausverwaltungen und lokalen Nischenquellen einsammeln.',
+    en: 'Predwell polls every major portal, agency, and local source around the clock — so you don’t have to refresh anything.',
+    de: 'Predwell fragt alle großen Portale, Makler und lokalen Quellen rund um die Uhr ab — du musst nichts mehr aktualisieren.',
   },
-  'how.step2.title': { en: 'Match against history', de: 'Mit Historie abgleichen' },
+  'how.step2.title': { en: 'Match your profile', de: 'Mit deinem Profil abgleichen' },
   'how.step2.copy': {
-    en: 'Compare fresh supply with historical rent, vacancy, timing, and source patterns.',
-    de: 'Neues Angebot mit historischen Miet-, Leerstands-, Timing- und Quellenmustern vergleichen.',
+    en: 'The instant a new listing fits your budget, rooms, and districts, it’s a match — scored and ready.',
+    de: 'Sobald ein neues Inserat zu Budget, Zimmern und Kiezen passt, ist es ein Treffer — bewertet und bereit.',
   },
-  'how.step3.title': { en: 'Move before the crowd', de: 'Schneller als die Masse' },
+  'how.step3.title': { en: 'You reach out first', de: 'Du meldest dich zuerst' },
   'how.step3.copy': {
-    en: 'Get a prioritized target list so you can contact landlords before listings go public.',
-    de: 'Erhalte eine priorisierte Zielliste und kontaktiere Vermieter, bevor Inserate öffentlich werden.',
+    en: 'Get an alert with a direct link to the listing and its agent — and act while the flat is still available.',
+    de: 'Erhalte einen Alert mit Direktlink zum Inserat und Anbieter — und handle, solange die Wohnung noch frei ist.',
   },
 
   // What you get (features)
   'features.eyebrow': { en: 'What you get', de: 'Das bekommst du' },
-  'features.title': { en: 'A daily read on the market, and a tap on the shoulder the moment your flat appears.', de: 'Täglicher Marktüberblick — und ein Schubser in dem Moment, in dem deine Wohnung auftaucht.' },
+  'features.title': { en: 'The instant your flat appears, you know — plus a daily read on the market.', de: 'In dem Moment, in dem deine Wohnung auftaucht, weißt du es — dazu täglich ein Marktüberblick.' },
   'features.digest.label': { en: 'Daily market digest', de: 'Täglicher Markt-Digest' },
   'features.digest.title': { en: 'Know where Berlin is moving', de: 'Wisse, wo sich Berlin bewegt' },
   'features.digest.copy': {
@@ -66,12 +85,22 @@ export const translations = {
   'features.alerts.label': { en: 'Instant match alerts', de: 'Sofort-Alerts bei Treffern' },
   'features.alerts.title': { en: 'Be first, not 200th', de: 'Sei der Erste, nicht der 200.' },
   'features.alerts.copy': {
-    en: 'The moment a flat fitting your profile is posted, Predwell pings you with the price, area, and a direct link — while there is still time to act.',
-    de: 'Sobald eine Wohnung zu deinem Profil auftaucht, meldet sich Predwell mit Preis, Kiez und Direktlink — solange noch Zeit bleibt zu handeln.',
+    en: 'The moment a flat fitting your profile is posted to any portal or agency feed we watch, Predwell pings you — price, area, and a direct link straight to the listing and its agent, while there is still time to be first.',
+    de: 'Sobald eine Wohnung zu deinem Profil auf einem der beobachteten Portale oder Makler-Feeds auftaucht, meldet sich Predwell — Preis, Kiez und Direktlink zum Inserat und seinem Anbieter, solange du noch der Erste sein kannst.',
   },
   'features.alerts.example': {
     en: '"Opportunity in Kreuzberg — 2 rooms, €1,240 warm, 92% match. Act fast →"',
     de: '„Chance in Kreuzberg — 2 Zimmer, 1.240 € warm, 92 % Treffer. Schnell sein →“',
+  },
+  'features.hood.label': { en: 'Neighborhood intelligence', de: 'Kiez-Analyse' },
+  'features.hood.title': { en: 'Know the neighborhood, not just the flat', de: 'Kenne den Kiez, nicht nur die Wohnung' },
+  'features.hood.copy': {
+    en: 'Every match comes with what the listing leaves out: walking distance to schools, playgrounds, parks, transit and supermarkets, plus the real commute to your work — so you can judge a place before you ever visit.',
+    de: 'Zu jedem Treffer kommt, was im Inserat fehlt: Laufwege zu Schulen, Spielplätzen, Parks, ÖPNV und Supermärkten, dazu die echte Pendelzeit zur Arbeit — damit du eine Wohnung einschätzen kannst, bevor du sie besichtigst.',
+  },
+  'features.hood.example': {
+    en: '"3 min to a playground · 6 min to the U-Bahn · 21 min to your office · 2 supermarkets within 300 m"',
+    de: '„3 Min. zum Spielplatz · 6 Min. zur U-Bahn · 21 Min. ins Büro · 2 Supermärkte in 300 m“',
   },
 
   // Free report / access section
