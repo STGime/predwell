@@ -26,6 +26,9 @@ if [[ "$STEP" == "all" || "$STEP" == "functions" ]]; then
   eurobase edge-functions deploy free-report      -f functions/free-report.js      --no-verify-jwt
   eurobase edge-functions deploy scrape-wg-gesucht -f functions/scrape-wg-gesucht.js --no-verify-jwt
   eurobase edge-functions deploy match-engine     -f functions/match-engine.js     --no-verify-jwt
+  eurobase edge-functions deploy enrich-listings  -f functions/enrich-listings.js  --no-verify-jwt
+  eurobase edge-functions deploy notify-matches   -f functions/notify-matches.js   --no-verify-jwt
+  eurobase edge-functions deploy daily-digest     -f functions/daily-digest.js     --no-verify-jwt
   eurobase edge-functions deploy create-checkout  -f functions/create-checkout.js
   eurobase edge-functions deploy mollie-webhook   -f functions/mollie-webhook.js   --no-verify-jwt
 
