@@ -146,18 +146,91 @@ async function updateDailyHistory(ctx) {
   }
 }
 
+const SOURCE = 'wg_gesucht'
+
+// 429/403 mean the site is actively pushing back. Cooldown grows
+// exponentially with consecutive blocks (2^n hours), capped at 24h, and is
+// overridden upward by a Retry-After header when the site sends one.
+const MAX_BACKOFF_HOURS = 24
+
+function backoffSeconds(failures, retryAfterSeconds) {
+  const hours = Math.min(MAX_BACKOFF_HOURS, Math.pow(2, failures))
+  const computed = hours * 3600
+  return retryAfterSeconds && retryAfterSeconds > computed ? retryAfterSeconds : computed
+}
+
+function parseRetryAfter(res) {
+  const header = res.headers.get('retry-after')
+  if (!header) return null
+  const secs = parseInt(header, 10)
+  return Number.isFinite(secs) ? secs : null // ignore HTTP-date form; exp backoff covers it
+}
+
+async function loadState(ctx) {
+  const rows = await ctx.db.sql(
+    'SELECT consecutive_failures, blocked_until FROM scrape_state WHERE source = $1',
+    [SOURCE],
+  )
+  return rows[0] ?? { consecutive_failures: 0, blocked_until: null }
+}
+
+async function saveState(ctx, patch) {
+  const existing = await ctx.db.sql('SELECT id FROM scrape_state WHERE source = $1', [SOURCE])
+  if (existing.length > 0) {
+    await ctx.db.sql(
+      `UPDATE scrape_state
+       SET consecutive_failures = $2, blocked_until = $3, last_status = $4,
+           last_run_at = now(), updated_at = now()
+       WHERE source = $1`,
+      [SOURCE, patch.failures, patch.blockedUntil, patch.status],
+    )
+  } else {
+    await ctx.db.sql(
+      `INSERT INTO scrape_state (source, consecutive_failures, blocked_until, last_status, last_run_at)
+       VALUES ($1, $2, $3, $4, now())`,
+      [SOURCE, patch.failures, patch.blockedUntil, patch.status],
+    )
+  }
+}
+
 globalThis.handler = async (req, ctx) => {
+  const state = await loadState(ctx)
+
+  // Honor an active cooldown — skip the run entirely while blocked.
+  if (state.blocked_until && new Date(state.blocked_until) > new Date()) {
+    ctx.log.warn('scrape skipped — in backoff', { blockedUntil: state.blocked_until })
+    return { ok: true, skipped: true, blockedUntil: state.blocked_until }
+  }
+
   const districts = await ctx.db.sql('SELECT id, slug FROM districts')
   const districtBySlug = new Map(districts.map((d) => [d.slug, d]))
 
   let total = { inserted: 0, refreshed: 0, parsed: 0 }
+  let blockedStatus = null
+  let retryAfter = null
+
   for (const [i, page] of PAGES.entries()) {
     if (i > 0) await new Promise((resolve) => setTimeout(resolve, 1200))
-    const res = await fetch(page, { headers: { 'User-Agent': USER_AGENT } })
+    let res
+    try {
+      res = await fetch(page, { headers: { 'User-Agent': USER_AGENT } })
+    } catch (err) {
+      ctx.log.warn('page fetch threw', { page, error: String(err) })
+      continue
+    }
+
+    // Block signals: stop the whole run and enter backoff.
+    if (res.status === 429 || res.status === 403) {
+      blockedStatus = res.status
+      retryAfter = parseRetryAfter(res)
+      ctx.log.warn('blocked by source', { page, status: res.status, retryAfter })
+      break
+    }
     if (!res.ok) {
       ctx.log.warn('page fetch failed', { page, status: res.status })
       continue
     }
+
     const rows = parseWgGesucht(await res.text())
     const { inserted, refreshed } = await upsertListings(ctx, rows, districtBySlug)
     total = {
@@ -166,6 +239,18 @@ globalThis.handler = async (req, ctx) => {
       parsed: total.parsed + rows.length,
     }
   }
+
+  if (blockedStatus) {
+    const failures = Number(state.consecutive_failures) + 1
+    const secs = backoffSeconds(failures, retryAfter)
+    const blockedUntil = new Date(Date.now() + secs * 1000).toISOString()
+    await saveState(ctx, { failures, blockedUntil, status: String(blockedStatus) })
+    ctx.log.warn('entering backoff', { failures, blockedUntil })
+    return { ok: false, blocked: true, status: blockedStatus, blockedUntil, failures }
+  }
+
+  // Success — clear any prior backoff.
+  await saveState(ctx, { failures: 0, blockedUntil: null, status: 'ok' })
 
   // Listings that have dropped off the feeds for 3+ days are gone.
   await ctx.db.sql(

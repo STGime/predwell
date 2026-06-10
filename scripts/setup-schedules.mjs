@@ -25,9 +25,12 @@ const SCHEDULES = [
     name: 'scrape-wg-gesucht',
     spec: {
       functionName: 'scrape-wg-gesucht',
-      cron: '*/15 * * * *',
+      // Hourly (not 15-min): WG-Gesucht is a fragile, best-effort source
+      // with anti-bot + DB-right concerns. The function self-throttles via
+      // scrape_state backoff on 429/403.
+      cron: '0 * * * *',
       timezone: 'UTC', // gateway rejects IANA zones (euroback#193)
-      description: 'Poll WG-Gesucht Berlin feeds for new listings',
+      description: 'Poll WG-Gesucht Berlin feeds for new listings (hourly, block-aware)',
     },
   },
   {
