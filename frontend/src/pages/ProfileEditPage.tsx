@@ -5,6 +5,8 @@ import { useAuth } from '../lib/auth'
 import { useI18n } from '../lib/i18n'
 import { fetchDistricts, fetchProfiles, fetchSubscription, profileLimit } from '../lib/data'
 import type { District } from '../lib/data'
+import { SearchFields, emptySearch } from '../components/SearchFields'
+import type { SearchFormState } from '../components/SearchFields'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
 import './OnboardingPage.css'
 
@@ -16,10 +18,8 @@ export function ProfileEditPage() {
   const isNew = id === 'new'
 
   const [districts, setDistricts] = useState<District[]>([])
-  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [name, setName] = useState('')
-  const [budget, setBudget] = useState('1400')
-  const [rooms, setRooms] = useState('2')
+  const [search, setSearch] = useState<SearchFormState>({ ...emptySearch, budget: '1400' })
   const [isActive, setIsActive] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -42,22 +42,18 @@ export function ProfileEditPage() {
         return
       }
       setName(profile.name)
-      setBudget(String(profile.budget_max))
-      setRooms(String(profile.rooms_min))
-      setSelected(new Set(profile.district_ids ?? []))
       setIsActive(profile.is_active)
+      setSearch({
+        text: profile.query_text ?? '',
+        budget: String(profile.budget_max),
+        rooms: String(profile.rooms_min),
+        districtIds: profile.district_ids ?? [],
+        features: profile.features?.features ?? {},
+        proximity: profile.features?.proximity ?? {},
+      })
     }
     load()
   }, [id, isNew, navigate])
-
-  function toggle(districtId: string) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(districtId)) next.delete(districtId)
-      else next.add(districtId)
-      return next
-    })
-  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -66,9 +62,11 @@ export function ProfileEditPage() {
     setError(null)
     const payload = {
       name: name.trim() || t('onboarding.name.placeholder'),
-      budget_max: parseInt(budget, 10) || 1400,
-      rooms_min: parseFloat(rooms) || 1,
-      district_ids: [...selected],
+      budget_max: parseInt(search.budget, 10) || 1400,
+      rooms_min: parseFloat(search.rooms) || 1,
+      district_ids: search.districtIds,
+      features: { features: search.features, proximity: search.proximity },
+      query_text: search.text.trim() || null,
       is_active: isActive,
     }
     const { error: dbError } = isNew
@@ -104,37 +102,7 @@ export function ProfileEditPage() {
                 placeholder={t('onboarding.name.placeholder')}
               />
             </label>
-            <div className="field-grid">
-              <label>
-                {t('app.budgetMax')}
-                <input
-                  inputMode="numeric"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value.replace(/[^0-9]/g, ''))}
-                />
-              </label>
-              <label>
-                {t('app.roomsMin')}
-                <select value={rooms} onChange={(e) => setRooms(e.target.value)}>
-                  <option value="1">{t('report.rooms.1')}</option>
-                  <option value="2">{t('report.rooms.2')}</option>
-                  <option value="3">{t('report.rooms.3plus')}</option>
-                </select>
-              </label>
-            </div>
-            <span className="chips-label">{t('onboarding.districts')}</span>
-            <div className="district-chips">
-              {districts.map((d) => (
-                <button
-                  type="button"
-                  key={d.id}
-                  className={`chip${selected.has(d.id) ? ' is-selected' : ''}`}
-                  onClick={() => toggle(d.id)}
-                >
-                  {d.name}
-                </button>
-              ))}
-            </div>
+            <SearchFields value={search} onChange={setSearch} districts={districts} />
             <label className="active-toggle">
               <input
                 type="checkbox"

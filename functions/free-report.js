@@ -76,13 +76,17 @@ globalThis.handler = async (req, ctx) => {
     return jsonResponse({ error: 'free run already used' }, 429)
   }
 
-  const budget = parseBudget(body.budget)
-  const rooms = parseRooms(body.bedrooms)
+  // Prefer the structured criteria parsed by the SmartSearch box; fall back to
+  // the legacy budget/bedrooms/areas strings (and their regex parsing).
+  const criteria = body.criteria && typeof body.criteria === 'object' ? body.criteria : null
+  const budget = criteria && Number.isFinite(criteria.budget_max)
+    ? criteria.budget_max
+    : parseBudget(body.budget)
+  const rooms = criteria && Number.isFinite(criteria.rooms_min)
+    ? criteria.rooms_min
+    : parseRooms(body.bedrooms)
   const areasRaw = String(body.areas || '').slice(0, 300)
-  const preferredSlugs = areasRaw
-    .split(/[,;/]+/)
-    .map(normalizeArea)
-    .filter(Boolean)
+  const queryText = criteria && criteria.query_text ? String(criteria.query_text).slice(0, 600) : null
 
   // District stats over the last 28 days of history.
   const districts = await ctx.db.sql(`
@@ -94,6 +98,10 @@ globalThis.handler = async (req, ctx) => {
   `)
   if (districts.length === 0) return jsonResponse({ error: 'no market data yet' }, 503)
 
+  // Preferred districts: explicit ids from the parser, else name-matched areas.
+  const preferredIds = new Set(criteria && Array.isArray(criteria.district_ids) ? criteria.district_ids : [])
+  const preferredSlugs = areasRaw.split(/[,;/]+/).map(normalizeArea).filter(Boolean)
+
   const maxNew = Math.max(...districts.map((d) => Number(d.avg_new)), 0.001)
   const scored = districts.map((d) => {
     // Estimated warm rent for the requested size in this district, mirroring
@@ -102,9 +110,9 @@ globalThis.handler = async (req, ctx) => {
     const estPrice = Number(d.avg_rent_sqm) * estSqm
     const affordability = Math.min(budget / estPrice, 1)
     const supply = Number(d.avg_new) / maxNew
-    const preferred = preferredSlugs.some(
-      (slug) => d.slug.includes(slug) || slug.includes(d.slug),
-    )
+    const preferred =
+      preferredIds.has(d.id) ||
+      preferredSlugs.some((slug) => d.slug.includes(slug) || slug.includes(d.slug))
     const percent = Math.max(
       35,
       Math.min(95, Math.round(38 + 32 * affordability + 18 * supply + (preferred ? 8 : 0))),
@@ -127,9 +135,9 @@ globalThis.handler = async (req, ctx) => {
 
   const result = { topDistricts, peak, monitoredFeeds: MONITORED_FEEDS }
   const inserted = await ctx.db.sql(
-    `INSERT INTO report_runs (budget, rooms, areas, result, client_fingerprint)
-     VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-    [budget, String(body.bedrooms || ''), areasRaw, JSON.stringify(result), fingerprint],
+    `INSERT INTO report_runs (budget, rooms, areas, result, client_fingerprint, query_text)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+    [budget, String(body.bedrooms || ''), areasRaw, JSON.stringify(result), fingerprint, queryText],
   )
 
   ctx.log.info('free report generated', { budget, rooms, areas: areasRaw })

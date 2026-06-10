@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { eb } from '../lib/eurobase'
 import { useI18n } from '../lib/i18n'
+import { fetchDistricts } from '../lib/data'
+import type { District } from '../lib/data'
 import { AlertCard } from '../components/AlertCard'
+import { SearchFields, emptySearch } from '../components/SearchFields'
+import type { SearchFormState } from '../components/SearchFields'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
 import './LandingPage.css'
 
@@ -34,20 +38,41 @@ export function LandingPage() {
   const [error, setError] = useState<string | null>(null)
   const [leadEmail, setLeadEmail] = useState('')
   const [leadSaved, setLeadSaved] = useState(false)
+  const [districts, setDistricts] = useState<District[]>([])
+  const [search, setSearch] = useState<SearchFormState>(emptySearch)
+
+  useEffect(() => {
+    fetchDistricts().then(setDistricts)
+  }, [])
 
   async function runReport(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (usedFreeRun || running) return
 
-    const formData = new FormData(event.currentTarget)
-    const budget = String(formData.get('budget') || '').trim() || '€1,400'
-    const bedrooms = String(formData.get('bedrooms') || '2 rooms')
-    const areas = String(formData.get('areas') || '').trim()
+    const budget = search.budget ? `€${search.budget}` : '€1,400'
+    const bedrooms = `${search.rooms} rooms`
+    const areas = districts
+      .filter((d) => search.districtIds.includes(d.id))
+      .map((d) => d.name)
+      .join(', ')
 
     setRunning(true)
     setError(null)
     const { data, error: fnError } = await eb.functions.invoke<FreeReport>('free-report', {
-      body: { budget, bedrooms, areas, fingerprint: fingerprint() },
+      body: {
+        budget,
+        bedrooms,
+        areas,
+        fingerprint: fingerprint(),
+        criteria: {
+          budget_max: search.budget ? parseInt(search.budget, 10) : null,
+          rooms_min: parseFloat(search.rooms) || null,
+          district_ids: search.districtIds,
+          features: search.features,
+          proximity: search.proximity,
+          query_text: search.text.trim() || null,
+        },
+      },
     })
     setRunning(false)
 
@@ -198,24 +223,7 @@ export function LandingPage() {
 
             {!showPaywall && (
               <form className="free-report" onSubmit={runReport}>
-                <div className="field-grid">
-                  <label>
-                    {t('report.budget')}
-                    <input name="budget" inputMode="numeric" placeholder="€1,400" autoComplete="off" />
-                  </label>
-                  <label>
-                    {t('report.bedrooms')}
-                    <select name="bedrooms" defaultValue="2 rooms">
-                      <option value="1 room">{t('report.rooms.1')}</option>
-                      <option value="2 rooms">{t('report.rooms.2')}</option>
-                      <option value="3+ rooms">{t('report.rooms.3plus')}</option>
-                    </select>
-                  </label>
-                </div>
-                <label>
-                  {t('report.areas')}
-                  <input name="areas" placeholder={t('report.areas.placeholder')} autoComplete="off" />
-                </label>
+                <SearchFields value={search} onChange={setSearch} districts={districts} />
                 <button className="button primary" type="submit" disabled={running}>
                   {running ? t('report.running') : t('report.submit')}
                 </button>

@@ -103,6 +103,31 @@ export const translations = {
     de: '„3 Min. zum Spielplatz · 6 Min. zur U-Bahn · 21 Min. ins Büro · 2 Supermärkte in 300 m“',
   },
 
+  // Smart free-text search
+  'search.freetext.label': { en: 'Describe your ideal flat', de: 'Beschreibe deine Wunschwohnung' },
+  'search.freetext.placeholder': {
+    en: '2 rooms in Mitte or Prenzlauer Berg, up to €1,500 warm, close to a Kita, parking, no sublets…',
+    de: '2 Zimmer in Mitte oder Prenzlauer Berg, bis 1.500 € warm, nah an einer Kita, Parkplatz, keine Zwischenmiete…',
+  },
+  'search.parsing': { en: 'Reading your wish…', de: 'Lese deinen Wunsch…' },
+  'search.understood': { en: 'Understood', de: 'Verstanden' },
+  'search.features.label': { en: 'Must-haves', de: 'Wichtig' },
+  'search.proximity.label': { en: 'Close to', de: 'In der Nähe von' },
+  'feat.parking': { en: 'Parking', de: 'Parkplatz' },
+  'feat.balcony': { en: 'Balcony', de: 'Balkon' },
+  'feat.furnished': { en: 'Furnished', de: 'Möbliert' },
+  'feat.unfurnished': { en: 'Unfurnished', de: 'Unmöbliert' },
+  'feat.lift': { en: 'Lift', de: 'Aufzug' },
+  'feat.garden': { en: 'Garden', de: 'Garten' },
+  'feat.pets_ok': { en: 'Pets OK', de: 'Haustiere OK' },
+  'feat.no_temporary': { en: 'No sublets', de: 'Keine Zwischenmiete' },
+  'feat.wbs_ok': { en: 'I have a WBS', de: 'WBS vorhanden' },
+  'prox.kita': { en: 'Kita / daycare', de: 'Kita' },
+  'prox.school': { en: 'School', de: 'Schule' },
+  'prox.park': { en: 'Park', de: 'Park' },
+  'prox.transit': { en: 'Transit', de: 'ÖPNV' },
+  'prox.supermarket': { en: 'Supermarket', de: 'Supermarkt' },
+
   // Free report / access section
   'access.eyebrow': { en: 'One free agent run', de: 'Ein kostenloser Agent-Lauf' },
   'access.title': { en: 'Get your free apartment report.', de: 'Hol dir deinen kostenlosen Wohnungs-Report.' },

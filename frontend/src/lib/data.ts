@@ -9,6 +9,38 @@ export interface District {
   demand_score: number
 }
 
+// Canonical search vocabulary — shared by parse-search, match-engine, and UI.
+export const FEATURE_KEYS = [
+  'parking',
+  'balcony',
+  'furnished',
+  'unfurnished',
+  'lift',
+  'garden',
+  'pets_ok',
+  'no_temporary',
+  'wbs_ok',
+] as const
+export const PROXIMITY_KEYS = ['kita', 'school', 'park', 'transit', 'supermarket'] as const
+
+export type FeatureKey = (typeof FEATURE_KEYS)[number]
+export type ProximityKey = (typeof PROXIMITY_KEYS)[number]
+
+/** Parsed (or hand-edited) search criteria, persisted into search_profiles.features. */
+export interface SearchCriteria {
+  features: Partial<Record<FeatureKey, boolean>>
+  proximity: Partial<Record<ProximityKey, boolean>>
+}
+
+/** Shape returned by the parse-search edge function. */
+export interface ParsedSearch extends SearchCriteria {
+  budget_max: number | null
+  rooms_min: number | null
+  district_ids: string[]
+  district_slugs: string[]
+  summary: string | null
+}
+
 export interface SearchProfile {
   id: string
   user_id: string
@@ -16,6 +48,8 @@ export interface SearchProfile {
   budget_max: number
   rooms_min: number
   district_ids: string[]
+  features: SearchCriteria | null
+  query_text: string | null
   is_active: boolean
   created_at: string
 }
