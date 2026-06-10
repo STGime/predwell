@@ -1,0 +1,13 @@
+{
+  "name": "predwell",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate": "node scripts/apply-migrations.mjs",
+    "seed": "node scripts/seed.mjs",
+    "deploy": "./scripts/deploy.sh"
+  },
+  "dependencies": {
+    "@eurobase/sdk": "^0.4.0"
+  }
+}

@@ -26,7 +26,7 @@ const SCHEDULES = [
     spec: {
       functionName: 'scrape-wg-gesucht',
       cron: '*/15 * * * *',
-      timezone: 'Europe/Berlin',
+      timezone: 'UTC', // gateway rejects IANA zones (euroback#193)
       description: 'Poll WG-Gesucht Berlin feeds for new listings',
     },
   },
@@ -35,7 +35,7 @@ const SCHEDULES = [
     spec: {
       functionName: 'match-engine',
       cron: '*/5 * * * *',
-      timezone: 'Europe/Berlin',
+      timezone: 'UTC', // gateway rejects IANA zones (euroback#193)
       description: 'Score fresh listings against active search profiles',
     },
   },
