@@ -1,0 +1,53 @@
+.onboarding-main {
+  display: grid;
+  place-items: center;
+  padding: 32px 0 72px;
+}
+
+.onboarding-panel {
+  width: min(640px, 100%);
+}
+
+.onboarding-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.chips-label {
+  color: var(--forest);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.district-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 9px 14px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255, 250, 241, 0.8);
+  border: 1px solid rgba(24, 33, 28, 0.18);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.chip.is-selected {
+  color: var(--paper-strong);
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.onboarding-form .button {
+  width: 100%;
+}

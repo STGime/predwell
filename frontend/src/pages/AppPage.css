@@ -1,0 +1,134 @@
+.app-main {
+  padding: 16px 0 72px;
+}
+
+.app-columns {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.feed-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.profile-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 9px 14px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(255, 250, 241, 0.8);
+  border: 1px solid rgba(24, 33, 28, 0.18);
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.chip.is-selected {
+  color: var(--paper-strong);
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.chip-add {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.profile-summary {
+  margin: 10px 0 18px;
+}
+
+.empty-panel {
+  margin-top: 8px;
+}
+
+.match-list {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.match-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  background: rgba(255, 250, 241, 0.72);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+
+.match-score {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  color: #fffaf1;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 900;
+  background: var(--signal);
+  border-radius: 50% 50% 50% 12px;
+}
+
+.match-body strong {
+  font-family: var(--font-sans);
+  font-size: 1.02rem;
+}
+
+.match-body .form-note {
+  margin-top: 4px;
+}
+
+.match-meta a {
+  color: var(--signal-dark);
+  font-weight: 700;
+}
+
+.status-select {
+  min-height: 42px;
+  width: auto;
+  padding: 0 10px;
+  font-size: 0.85rem;
+  border-radius: 12px;
+}
+
+.status-select.status-won {
+  border-color: var(--forest);
+  background: var(--mint);
+}
+
+.status-select.status-rejected {
+  opacity: 0.6;
+}
+
+.logout-button {
+  cursor: pointer;
+}
+
+.outlook-column h2 {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 960px) {
+  .app-columns {
+    grid-template-columns: 1fr;
+  }
+}

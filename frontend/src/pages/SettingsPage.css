@@ -1,0 +1,25 @@
+.settings-main {
+  display: grid;
+  gap: 24px;
+  width: min(640px, 100%);
+  margin: 0 auto;
+  padding: 32px 0 72px;
+}
+
+.settings-panel .button {
+  margin-top: 18px;
+}
+
+.active-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+}
+
+.active-toggle input {
+  width: auto;
+  min-height: auto;
+}
