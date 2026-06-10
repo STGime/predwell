@@ -1,0 +1,52 @@
+#!/usr/bin/env node
+// Provisions cron schedules for the deployed edge functions. Idempotent.
+// Run after `eurobase edge-functions deploy` (functions must exist first).
+//
+// Usage: node scripts/setup-schedules.mjs
+
+import { createClient } from '@eurobase/sdk'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+for (const line of readFileSync(join(root, '.env'), 'utf8').split('\n')) {
+  const m = line.match(/^([A-Z_]+)=(.*)$/)
+  if (m && !process.env[m[1]]) process.env[m[1]] = m[2]
+}
+
+const eb = createClient({
+  url: process.env.EUROBASE_URL,
+  apiKey: process.env.EUROBASE_SECRET_KEY,
+})
+
+const SCHEDULES = [
+  {
+    name: 'scrape-wg-gesucht',
+    spec: {
+      functionName: 'scrape-wg-gesucht',
+      cron: '*/15 * * * *',
+      timezone: 'Europe/Berlin',
+      description: 'Poll WG-Gesucht Berlin feeds for new listings',
+    },
+  },
+  {
+    name: 'match-engine',
+    spec: {
+      functionName: 'match-engine',
+      cron: '*/5 * * * *',
+      timezone: 'Europe/Berlin',
+      description: 'Score fresh listings against active search profiles',
+    },
+  },
+]
+
+for (const { name, spec } of SCHEDULES) {
+  const { data, error } = await eb.functions.schedules.createOrUpdate(name, spec)
+  if (error) {
+    console.error(`✗ ${name}: ${error.message}`)
+    process.exitCode = 1
+  } else {
+    console.log(`✓ ${name} → ${data.cron} (${data.timezone}), enabled=${data.enabled}`)
+  }
+}
