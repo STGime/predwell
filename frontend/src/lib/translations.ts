@@ -50,6 +50,30 @@ export const translations = {
     de: 'Erhalte eine priorisierte Zielliste und kontaktiere Vermieter, bevor Inserate öffentlich werden.',
   },
 
+  // What you get (features)
+  'features.eyebrow': { en: 'What you get', de: 'Das bekommst du' },
+  'features.title': { en: 'A daily read on the market, and a tap on the shoulder the moment your flat appears.', de: 'Täglicher Marktüberblick — und ein Schubser in dem Moment, in dem deine Wohnung auftaucht.' },
+  'features.digest.label': { en: 'Daily market digest', de: 'Täglicher Markt-Digest' },
+  'features.digest.title': { en: 'Know where Berlin is moving', de: 'Wisse, wo sich Berlin bewegt' },
+  'features.digest.copy': {
+    en: 'Every morning, a short read on which districts are heating up and cooling down — new supply, price drift, how fast flats are going.',
+    de: 'Jeden Morgen ein kurzer Überblick, welche Kieze anziehen und welche abkühlen — neues Angebot, Preisentwicklung, wie schnell Wohnungen weg sind.',
+  },
+  'features.digest.example': {
+    en: '"Friedrichshain supply up 61% this week; Moabit slowing. Act early-week in Neukölln under €1,100."',
+    de: '„Friedrichshain: Angebot +61 % diese Woche; Moabit kühlt ab. In Neukölln unter 1.100 € früh in der Woche zuschlagen.“',
+  },
+  'features.alerts.label': { en: 'Instant match alerts', de: 'Sofort-Alerts bei Treffern' },
+  'features.alerts.title': { en: 'Be first, not 200th', de: 'Sei der Erste, nicht der 200.' },
+  'features.alerts.copy': {
+    en: 'The moment a flat fitting your profile is posted, Predwell pings you with the price, area, and a direct link — while there is still time to act.',
+    de: 'Sobald eine Wohnung zu deinem Profil auftaucht, meldet sich Predwell mit Preis, Kiez und Direktlink — solange noch Zeit bleibt zu handeln.',
+  },
+  'features.alerts.example': {
+    en: '"Opportunity in Kreuzberg — 2 rooms, €1,240 warm, 92% match. Act fast →"',
+    de: '„Chance in Kreuzberg — 2 Zimmer, 1.240 € warm, 92 % Treffer. Schnell sein →“',
+  },
+
   // Free report / access section
   'access.eyebrow': { en: 'One free agent run', de: 'Ein kostenloser Agent-Lauf' },
   'access.title': { en: 'Get your free apartment report.', de: 'Hol dir deinen kostenlosen Wohnungs-Report.' },
@@ -168,6 +192,12 @@ export const translations = {
   'app.roomsMin': { en: 'Min rooms', de: 'Min. Zimmer' },
   'app.active': { en: 'Active', de: 'Aktiv' },
   'app.openListing': { en: 'View listing', de: 'Inserat ansehen' },
+  'flag.furnished': { en: 'Furnished', de: 'Möbliert' },
+  'flag.temporary': { en: 'Temporary', de: 'Befristet' },
+  'flag.requires_wbs': { en: 'WBS required', de: 'WBS nötig' },
+  'flag.swap_only': { en: 'Swap only', de: 'Nur Tausch' },
+  'flag.cooperative': { en: 'Co-op', de: 'Genossenschaft' },
+  'flag.commission_free': { en: 'No commission', de: 'Provisionsfrei' },
 
   // Settings / subscription
   'settings.account': { en: 'Account', de: 'Konto' },

@@ -42,6 +42,37 @@ const SCHEDULES = [
       description: 'Score fresh listings against active search profiles',
     },
   },
+  {
+    name: 'enrich-listings',
+    spec: {
+      functionName: 'enrich-listings',
+      // A few minutes after match-engine so freshly-matched listings get the
+      // detail-fetch pass. Self-throttles via the shared scrape_state backoff.
+      cron: '3-59/5 * * * *',
+      timezone: 'UTC',
+      description: 'Mistral-classify listings (title + detail-fetch for matched ones)',
+    },
+  },
+  {
+    name: 'notify-matches',
+    spec: {
+      functionName: 'notify-matches',
+      // Instant alerts: stamp + email fresh high-score matches every 5 min.
+      cron: '*/5 * * * *',
+      timezone: 'UTC',
+      description: 'Email instant alerts for fresh high-score matches (store-now)',
+    },
+  },
+  {
+    name: 'daily-digest',
+    spec: {
+      functionName: 'daily-digest',
+      // 05:00 UTC ≈ 06:00–07:00 Europe/Berlin (DST drift; gateway is UTC-only, #193).
+      cron: '0 5 * * *',
+      timezone: 'UTC',
+      description: 'Generate the daily Berlin market digest (Mistral, EN/DE)',
+    },
+  },
 ]
 
 for (const { name, spec } of SCHEDULES) {

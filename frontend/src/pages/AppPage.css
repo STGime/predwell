@@ -102,6 +102,39 @@
   font-weight: 700;
 }
 
+.match-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.flag-chip {
+  padding: 3px 9px;
+  color: var(--forest);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(207, 231, 212, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.flag-chip.flag-warn {
+  color: var(--signal-dark);
+  background: rgba(240, 122, 62, 0.14);
+  border-color: rgba(164, 71, 32, 0.25);
+}
+
+.match-fit-note {
+  margin: 8px 0 0;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
 .status-select {
   min-height: 42px;
   width: auto;

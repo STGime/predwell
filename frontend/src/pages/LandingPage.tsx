@@ -150,6 +150,25 @@ export function LandingPage() {
           </div>
         </section>
 
+        <section className="features" id="what-you-get" aria-label="What you get">
+          <p className="eyebrow">{t('features.eyebrow')}</p>
+          <h2 className="features-title">{t('features.title')}</h2>
+          <div className="feature-grid">
+            <div className="panel feature-card">
+              <span className="feature-label">{t('features.digest.label')}</span>
+              <strong className="feature-name">{t('features.digest.title')}</strong>
+              <p className="panel-copy">{t('features.digest.copy')}</p>
+              <p className="feature-example">{t('features.digest.example')}</p>
+            </div>
+            <div className="panel feature-card">
+              <span className="feature-label">{t('features.alerts.label')}</span>
+              <strong className="feature-name">{t('features.alerts.title')}</strong>
+              <p className="panel-copy">{t('features.alerts.copy')}</p>
+              <p className="feature-example">{t('features.alerts.example')}</p>
+            </div>
+          </div>
+        </section>
+
         <section className="sections" id="early-access" aria-label="Get your free apartment report">
           <div className="panel dark access">
             <div>

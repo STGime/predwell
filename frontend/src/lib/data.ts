@@ -33,6 +33,17 @@ export interface Listing {
   first_seen_at: string
 }
 
+export interface ListingFlags {
+  temporary?: boolean
+  requires_wbs?: boolean
+  furnished?: boolean
+  swap_only?: boolean
+  cooperative?: boolean
+  commission_free?: boolean
+  deposit_months?: number | null
+  fit_note?: string | null
+}
+
 export interface Match {
   id: string
   search_profile_id: string
@@ -41,7 +52,19 @@ export interface Match {
   status: MatchStatus
   notes: string | null
   matched_at: string
+  flags: ListingFlags | null
+  fit_note: string | null
 }
+
+/** Flag keys rendered as chips on match cards, in display order. */
+export const DISPLAY_FLAGS: (keyof ListingFlags)[] = [
+  'furnished',
+  'temporary',
+  'requires_wbs',
+  'swap_only',
+  'cooperative',
+  'commission_free',
+]
 
 export type MatchStatus = 'new' | 'seen' | 'contacted' | 'applied' | 'viewing' | 'rejected' | 'won'
 

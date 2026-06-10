@@ -5,6 +5,7 @@ import { useAuth } from '../lib/auth'
 import { useI18n } from '../lib/i18n'
 import type { TranslationKey } from '../lib/i18n'
 import {
+  DISPLAY_FLAGS,
   MATCH_STATUSES,
   fetchDistricts,
   fetchListingsByIds,
@@ -186,6 +187,19 @@ export function AppPage() {
                           </>
                         )}
                       </p>
+                      {m.flags && (
+                        <div className="match-flags">
+                          {DISPLAY_FLAGS.filter((f) => m.flags?.[f]).map((f) => (
+                            <span
+                              key={f}
+                              className={`flag-chip${f === 'temporary' || f === 'swap_only' || f === 'requires_wbs' ? ' flag-warn' : ''}`}
+                            >
+                              {t(`flag.${f}` as TranslationKey)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {m.fit_note && <p className="match-fit-note">{m.fit_note}</p>}
                     </div>
                     <select
                       className={`status-select status-${m.status}`}

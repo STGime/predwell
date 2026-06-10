@@ -35,7 +35,9 @@ const ctx = {
       return res.rows || []
     },
   },
-  vault: { get: async () => null },
+  // Vault reads fall back to process.env so the LLM/email paths can be
+  // exercised locally: e.g. `MISTRAL_API_KEY=... node scripts/test-function-local.mjs ...`
+  vault: { get: async (name) => process.env[name] ?? null },
   storage: {},
   env: {},
   user: null,

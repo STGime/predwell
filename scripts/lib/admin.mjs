@@ -58,6 +58,8 @@ export const api = {
   createTable: (name, columns, opts = {}) =>
     call('POST', '/v1/db/schema/tables/', { name, columns, rls_preset: opts.rlsPreset ?? 'none' }),
   dropTable: (name) => call('DELETE', `/v1/db/schema/tables/${name}`),
+  addColumn: (table, column) => call('POST', `/v1/db/schema/tables/${table}/columns`, column),
+  dropColumn: (table, name) => call('DELETE', `/v1/db/schema/tables/${table}/columns/${name}`),
   addForeignKey: (table, fk) => call('POST', `/v1/db/schema/tables/${table}/foreign-keys`, fk),
   addUnique: (table, column) =>
     call('POST', `/v1/db/schema/tables/${table}/constraints/unique`, { column }),

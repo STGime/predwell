@@ -40,6 +40,7 @@ export function OnboardingPage() {
     setError(null)
     const { error: insertError } = await eb.db.from('search_profiles').insert({
       user_id: session.user.id,
+      email: session.user.email,
       name: name.trim() || t('onboarding.name.placeholder'),
       budget_max: parseInt(budget, 10) || 1400,
       rooms_min: parseFloat(rooms) || 1,

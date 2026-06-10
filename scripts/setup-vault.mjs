@@ -28,6 +28,11 @@ const SECRETS = {
   APP_URL: process.env.APP_URL,
   GATEWAY_URL: process.env.GATEWAY_URL || process.env.EUROBASE_URL,
   PUBLIC_API_KEY: process.env.EUROBASE_PUBLIC_KEY,
+  // Mistral (EU LLM) — listing enrichment + daily digest.
+  MISTRAL_API_KEY: process.env.MISTRAL_API_KEY,
+  // Scaleway Transactional Email (EU) — digest + alert delivery (deferred).
+  SCW_TEM_API_KEY: process.env.SCW_TEM_API_KEY,
+  SCW_TEM_SENDER: process.env.SCW_TEM_SENDER,
 }
 
 for (const [name, value] of Object.entries(SECRETS)) {

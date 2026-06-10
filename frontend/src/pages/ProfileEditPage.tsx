@@ -72,7 +72,7 @@ export function ProfileEditPage() {
       is_active: isActive,
     }
     const { error: dbError } = isNew
-      ? await eb.db.from('search_profiles').insert({ ...payload, user_id: session.user.id })
+      ? await eb.db.from('search_profiles').insert({ ...payload, user_id: session.user.id, email: session.user.email })
       : await eb.db.from('search_profiles').update(id!, payload)
     setBusy(false)
     if (dbError) {
