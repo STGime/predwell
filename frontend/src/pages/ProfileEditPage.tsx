@@ -78,11 +78,14 @@ export function ProfileEditPage() {
     const { error: dbError } = isNew
       ? await eb.db.from('search_profiles').insert({ ...payload, user_id: session.user.id, email: session.user.email })
       : await eb.db.from('search_profiles').update(id!, payload)
-    setBusy(false)
     if (dbError) {
+      setBusy(false)
       setError(dbError)
       return
     }
+    // Re-score against the updated criteria so the feed reflects the change now.
+    await eb.functions.invoke('match-engine', { body: {} })
+    setBusy(false)
     navigate('/app')
   }
 

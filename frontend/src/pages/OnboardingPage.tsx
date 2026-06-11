@@ -45,11 +45,14 @@ export function OnboardingPage() {
       notify_push: notify.notify_push,
       is_active: true,
     })
-    setBusy(false)
     if (insertError) {
+      setBusy(false)
       setError(insertError)
       return
     }
+    // Score the new profile right away so the feed isn't empty on arrival.
+    await eb.functions.invoke('match-engine', { body: {} })
+    setBusy(false)
     navigate('/app')
   }
 

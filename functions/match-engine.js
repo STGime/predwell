@@ -126,7 +126,7 @@ globalThis.handler = async (req, ctx) => {
   ).filter((l) => !SHORT_TERM_RE.test(l.title || ''))
 
   let matched = 0
-  let skipped = 0
+  let pruned = 0
   for (const profile of profiles) {
     const districtIds = Array.isArray(profile.district_ids)
       ? profile.district_ids
@@ -134,15 +134,18 @@ globalThis.handler = async (req, ctx) => {
     const preferred = new Set(districtIds)
     const roomsMin = Number(profile.rooms_min)
 
+    // Re-evaluate the whole candidate set against the (possibly just-edited)
+    // profile: add newly-qualifying listings, refresh scores on existing
+    // un-actioned matches, and prune ones that no longer qualify. Matches the
+    // user has acted on (contacted/applied/…) are never touched.
     const existing = await ctx.db.sql(
-      'SELECT listing_id FROM matches WHERE search_profile_id = $1',
+      'SELECT id, listing_id, status FROM matches WHERE search_profile_id = $1',
       [profile.id],
     )
-    const already = new Set(existing.map((m) => m.listing_id))
+    const byListing = new Map(existing.map((m) => [m.listing_id, m]))
+    const qualifies = new Set()
 
     for (const listing of listings) {
-      if (already.has(listing.id)) continue
-
       // Hard filters on the explicit criteria (relevance):
       //  - budget: warm rent more than 10% over the max
       //  - rooms: a known room count below the minimum (half-room tolerance)
@@ -153,18 +156,30 @@ globalThis.handler = async (req, ctx) => {
       if (preferred.size > 0 && (!listing.district_id || !preferred.has(listing.district_id))) continue
 
       const score = scoreListing(profile, listing, preferred)
-      if (score < MIN_SCORE) {
-        skipped++
-        continue
+      if (score < MIN_SCORE) continue
+      qualifies.add(listing.id)
+
+      const ex = byListing.get(listing.id)
+      if (!ex) {
+        await ctx.db.sql(
+          `INSERT INTO matches (search_profile_id, listing_id, score) VALUES ($1, $2, $3)`,
+          [profile.id, listing.id, score],
+        )
+        matched++
+      } else if (ex.status === 'new' || ex.status === 'seen') {
+        await ctx.db.sql('UPDATE matches SET score = $2 WHERE id = $1', [ex.id, score])
       }
-      await ctx.db.sql(
-        `INSERT INTO matches (search_profile_id, listing_id, score) VALUES ($1, $2, $3)`,
-        [profile.id, listing.id, score],
-      )
-      matched++
+    }
+
+    // Prune un-actioned matches that no longer qualify (criteria narrowed).
+    for (const m of existing) {
+      if (!qualifies.has(m.listing_id) && (m.status === 'new' || m.status === 'seen')) {
+        await ctx.db.sql('DELETE FROM matches WHERE id = $1', [m.id])
+        pruned++
+      }
     }
   }
 
-  ctx.log.info('match engine complete', { profiles: profiles.length, matched, skipped })
-  return { ok: true, profiles: profiles.length, matched }
+  ctx.log.info('match engine complete', { profiles: profiles.length, matched, pruned })
+  return { ok: true, profiles: profiles.length, matched, pruned }
 }
