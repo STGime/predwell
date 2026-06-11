@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useI18n } from '../lib/i18n'
+import { useAuth } from '../lib/auth'
 import './SiteChrome.css'
 
 export function LangToggle() {
@@ -18,14 +19,24 @@ export function LangToggle() {
 
 export function SiteHeader({ children }: { children?: React.ReactNode }) {
   const { t } = useI18n()
+  const { session } = useAuth()
+  // Logged in: the logo goes to the dashboard (not the public landing page,
+  // which looks like a logout), and we surface an explicit Dashboard link.
   return (
     <header className="site-header" aria-label="Predwell header">
-      <Link to="/" className="brand" aria-label="Predwell">
+      <Link to={session ? '/app' : '/'} className="brand" aria-label="Predwell">
         <span className="brand-mark">P</span>
         <span>Predwell</span>
       </Link>
       <div className="header-right">
-        {children ?? <div className="nav-note">{t('nav.tagline')}</div>}
+        {children ??
+          (session ? (
+            <Link className="nav-note" to="/app">
+              {t('nav.dashboard')}
+            </Link>
+          ) : (
+            <div className="nav-note">{t('nav.tagline')}</div>
+          ))}
         <LangToggle />
       </div>
     </header>

@@ -53,6 +53,9 @@ export interface SearchProfile {
   district_ids: string[]
   features: SearchCriteria | null
   query_text: string | null
+  email: string | null
+  notify_email: boolean
+  notify_push: boolean
   is_active: boolean
   created_at: string
 }

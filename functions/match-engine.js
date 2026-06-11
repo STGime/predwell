@@ -100,10 +100,14 @@ function scoreListing(profile, listing, preferredDistricts) {
   return Math.max(0, Math.min(100, score))
 }
 
-// Short-term / holiday / commercial lets are never what a long-term renter
-// wants — exclude them outright by title (no enrichment needed).
+// Short-term / holiday / single-room lets are not what a long-term flat seeker
+// wants — exclude them outright by title (no enrichment needed). Covers nightly
+// rentals, sublets (Zwischen-/Untermiete), and single rooms in a shared flat.
 const SHORT_TERM_RE =
-  /übernachtung|ferienwohnung|ferienappartement|monteur|tagesmiete|boardinghouse|serviced|auf zeit|\/\s*nacht|pro nacht|per night|nightly/i
+  /übernachtung|ferienwohnung|ferienappartement|monteur|tagesmiete|boardinghouse|serviced|auf zeit|\/\s*nacht|pro nacht|per night|nightly|zwischenmiete|untermiete|private bedroom|private room|wg-?zimmer|zimmer in|möbliertes zimmer/i
+
+// Hard budget cap: warm rent up to 10% over the stated max (cold/warm slack).
+const BUDGET_TOLERANCE = 1.1
 
 globalThis.handler = async (req, ctx) => {
   const profiles = await ctx.db.sql(
@@ -140,9 +144,11 @@ globalThis.handler = async (req, ctx) => {
       if (already.has(listing.id)) continue
 
       // Hard filters on the explicit criteria (relevance):
+      //  - budget: warm rent more than 10% over the max
       //  - rooms: a known room count below the minimum (half-room tolerance)
       //  - district: when the user picked districts, require a KNOWN district
       //    in that set — drops wrong-district AND ungeocoded listings.
+      if (listing.price_warm != null && Number(listing.price_warm) > profile.budget_max * BUDGET_TOLERANCE) continue
       if (listing.rooms != null && Number(listing.rooms) < roomsMin - 0.5) continue
       if (preferred.size > 0 && (!listing.district_id || !preferred.has(listing.district_id))) continue
 

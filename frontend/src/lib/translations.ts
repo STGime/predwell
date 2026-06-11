@@ -3,6 +3,7 @@ type Entry = { en: string; de: string }
 export const translations = {
   // Header
   'nav.tagline': { en: 'Berlin renter intelligence', de: 'Berliner Mieter-Intelligenz' },
+  'nav.dashboard': { en: 'Dashboard', de: 'Dashboard' },
 
   // Landing hero
   'hero.eyebrow': { en: 'Agentic AI · real-time apartment alerts for Berlin', de: 'Agentic AI · Echtzeit-Wohnungsalerts für Berlin' },
@@ -213,6 +214,18 @@ export const translations = {
   'auth.login.submit': { en: 'Log in', de: 'Anmelden' },
   'auth.haveAccount': { en: 'Already have an account? Log in', de: 'Schon ein Konto? Anmelden' },
   'auth.noAccount': { en: 'New to Predwell? Sign up', de: 'Neu bei Predwell? Registrieren' },
+
+  // Notifications
+  'notify.label': { en: 'How should we reach you?', de: 'Wie sollen wir dich erreichen?' },
+  'notify.email': { en: 'Email', de: 'E-Mail' },
+  'notify.push': { en: 'Browser push', de: 'Browser-Push' },
+  'notify.push.soon': { en: 'coming soon', de: 'bald verfügbar' },
+  'notify.note': {
+    en: 'We alert you the moment a fitting flat appears.',
+    de: 'Wir alarmieren dich, sobald eine passende Wohnung auftaucht.',
+  },
+  'settings.notifications': { en: 'Notifications', de: 'Benachrichtigungen' },
+  'settings.saved': { en: 'Saved', de: 'Gespeichert' },
 
   // Onboarding
   'onboarding.eyebrow': { en: 'Two minutes to set up', de: 'In zwei Minuten eingerichtet' },

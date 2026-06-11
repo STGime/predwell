@@ -63,7 +63,7 @@ globalThis.handler = async (req, ctx) => {
     `SELECT m.id, m.score, m.fit_note,
             l.title, l.url, l.price_warm, l.rooms, l.size_sqm,
             d.name AS district_name,
-            sp.email AS user_email
+            sp.email AS user_email, sp.notify_email
      FROM matches m
      JOIN listings l ON l.id = m.listing_id
      JOIN search_profiles sp ON sp.id = m.search_profile_id
@@ -79,7 +79,7 @@ globalThis.handler = async (req, ctx) => {
   let sent = 0
   let stored = 0
   for (const m of rows) {
-    if (m.user_email) {
+    if (m.user_email && m.notify_email !== false) {
       const result = await sendEmail(ctx, {
         to: m.user_email,
         subject: `Predwell: ${m.score}% match in ${m.district_name || 'Berlin'} — act fast`,

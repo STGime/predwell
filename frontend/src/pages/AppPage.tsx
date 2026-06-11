@@ -108,7 +108,7 @@ export function AppPage() {
   return (
     <div className="shell">
       <header className="site-header" aria-label="Predwell app header">
-        <Link to="/" className="brand">
+        <Link to="/app" className="brand">
           <span className="brand-mark">P</span>
           <span>Predwell</span>
         </Link>

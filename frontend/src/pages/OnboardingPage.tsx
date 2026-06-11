@@ -7,6 +7,8 @@ import { fetchDistricts } from '../lib/data'
 import type { District } from '../lib/data'
 import { SearchFields, emptySearch } from '../components/SearchFields'
 import type { SearchFormState } from '../components/SearchFields'
+import { NotifyFields } from '../components/NotifyFields'
+import type { NotifyState } from '../components/NotifyFields'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
 import './OnboardingPage.css'
 
@@ -17,6 +19,7 @@ export function OnboardingPage() {
   const [districts, setDistricts] = useState<District[]>([])
   const [name, setName] = useState('')
   const [search, setSearch] = useState<SearchFormState>({ ...emptySearch, budget: '1400' })
+  const [notify, setNotify] = useState<NotifyState>({ notify_email: true, notify_push: false })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -38,6 +41,8 @@ export function OnboardingPage() {
       district_ids: search.districtIds,
       features: { features: search.features, proximity: search.proximity },
       query_text: search.text.trim() || null,
+      notify_email: notify.notify_email,
+      notify_push: notify.notify_push,
       is_active: true,
     })
     setBusy(false)
@@ -65,6 +70,7 @@ export function OnboardingPage() {
               />
             </label>
             <SearchFields value={search} onChange={setSearch} districts={districts} />
+            <NotifyFields value={notify} onChange={setNotify} email={session?.user.email ?? ''} />
             {error && <p className="form-note error-note">{error}</p>}
             <button className="button primary" type="submit" disabled={busy}>
               {busy ? t('loading') : t('onboarding.submit')}

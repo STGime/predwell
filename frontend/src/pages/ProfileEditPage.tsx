@@ -7,6 +7,8 @@ import { fetchDistricts, fetchProfiles, fetchSubscription, profileLimit } from '
 import type { District } from '../lib/data'
 import { SearchFields, emptySearch } from '../components/SearchFields'
 import type { SearchFormState } from '../components/SearchFields'
+import { NotifyFields } from '../components/NotifyFields'
+import type { NotifyState } from '../components/NotifyFields'
 import { SiteFooter, SiteHeader } from '../components/SiteChrome'
 import './OnboardingPage.css'
 
@@ -20,6 +22,7 @@ export function ProfileEditPage() {
   const [districts, setDistricts] = useState<District[]>([])
   const [name, setName] = useState('')
   const [search, setSearch] = useState<SearchFormState>({ ...emptySearch, budget: '1400' })
+  const [notify, setNotify] = useState<NotifyState>({ notify_email: true, notify_push: false })
   const [isActive, setIsActive] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -43,6 +46,7 @@ export function ProfileEditPage() {
       }
       setName(profile.name)
       setIsActive(profile.is_active)
+      setNotify({ notify_email: profile.notify_email ?? true, notify_push: profile.notify_push ?? false })
       setSearch({
         text: profile.query_text ?? '',
         budget: String(profile.budget_max),
@@ -67,6 +71,8 @@ export function ProfileEditPage() {
       district_ids: search.districtIds,
       features: { features: search.features, proximity: search.proximity },
       query_text: search.text.trim() || null,
+      notify_email: notify.notify_email,
+      notify_push: notify.notify_push,
       is_active: isActive,
     }
     const { error: dbError } = isNew
@@ -103,6 +109,7 @@ export function ProfileEditPage() {
               />
             </label>
             <SearchFields value={search} onChange={setSearch} districts={districts} />
+            <NotifyFields value={notify} onChange={setNotify} email={session?.user.email ?? ''} />
             <label className="active-toggle">
               <input
                 type="checkbox"

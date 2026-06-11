@@ -229,6 +229,21 @@ select:focus {
   color: rgba(255, 250, 241, 0.68);
 }
 
+/* Shared form label + saved-confirmation, used across search/notify/settings. */
+.chip-group-label {
+  color: var(--forest);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lead-done {
+  color: var(--forest);
+  font-weight: 700;
+}
+
 /* Canonical pill chip (toggle / multi-select), used across search + dashboard. */
 .chip {
   padding: 9px 14px;
