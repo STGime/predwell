@@ -135,14 +135,13 @@ function asArray<T>(data: T | T[] | null): T[] {
 }
 
 export async function fetchDistricts(): Promise<District[]> {
-  const { data } = await eb.db.from<District>('districts').select('*').order('name')
+  const { data } = await eb.db.from<District>('districts').order('name')
   return asArray(data)
 }
 
 export async function fetchProfiles(): Promise<SearchProfile[]> {
   const { data } = await eb.db
     .from<SearchProfile>('search_profiles')
-    .select('*')
     .order('created_at')
   return asArray(data)
 }
@@ -151,7 +150,6 @@ export async function fetchMatches(profileIds: string[]): Promise<Match[]> {
   if (profileIds.length === 0) return []
   const { data } = await eb.db
     .from<Match>('matches')
-    .select('*')
     .in('search_profile_id', profileIds)
     .order('matched_at', { ascending: false })
     .limit(100)
@@ -160,12 +158,12 @@ export async function fetchMatches(profileIds: string[]): Promise<Match[]> {
 
 export async function fetchListingsByIds(ids: string[]): Promise<Map<string, Listing>> {
   if (ids.length === 0) return new Map()
-  const { data } = await eb.db.from<Listing>('listings').select('*').in('id', ids)
+  const { data } = await eb.db.from<Listing>('listings').in('id', ids)
   return new Map(asArray(data).map((l) => [l.id, l]))
 }
 
 export async function fetchSubscription(): Promise<Subscription | null> {
-  const { data } = await eb.db.from<Subscription>('subscriptions').select('*').limit(1)
+  const { data } = await eb.db.from<Subscription>('subscriptions').limit(1)
   const rows = asArray(data)
   return rows[0] ?? null
 }
