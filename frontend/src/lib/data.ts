@@ -4,6 +4,8 @@ export interface District {
   id: string
   name: string
   slug: string
+  center_lat: number
+  center_lng: number
   avg_rent_sqm: number
   listing_velocity_hours: number
   demand_score: number
@@ -75,6 +77,8 @@ export interface Listing {
   url: string | null
   district_id: string | null
   address_text: string | null
+  lat: number | null
+  lng: number | null
   price_warm: number | null
   size_sqm: number | null
   rooms: number | null

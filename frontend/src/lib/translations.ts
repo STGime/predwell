@@ -243,6 +243,7 @@ export const translations = {
   },
   'app.profiles': { en: 'Search profiles', de: 'Suchprofile' },
   'app.outlook': { en: 'District outlook', de: 'Bezirks-Ausblick' },
+  'app.map': { en: 'Match map', de: 'Treffer-Karte' },
   'app.settings': { en: 'Settings', de: 'Einstellungen' },
   'app.logout': { en: 'Log out', de: 'Abmelden' },
   'app.firstSeen': { en: 'first seen {time}', de: 'zuerst gesehen {time}' },

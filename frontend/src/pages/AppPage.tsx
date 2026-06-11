@@ -15,7 +15,7 @@ import {
   profileLimit,
 } from '../lib/data'
 import type { District, Listing, Match, MatchStatus, SearchProfile, Subscription } from '../lib/data'
-import { ForecastMap } from '../components/ForecastMap'
+import { MatchMap } from '../components/MatchMap'
 import { LangToggle } from '../components/SiteChrome'
 import './AppPage.css'
 
@@ -79,19 +79,6 @@ export function AppPage() {
   )
 
   const districtById = useMemo(() => new Map(districts.map((d) => [d.id, d])), [districts])
-
-  // District outlook: demand-weighted forecast pins for the top districts.
-  const outlook = useMemo(() => {
-    const top = [...districts].sort((a, b) => b.demand_score - a.demand_score).slice(0, 2)
-    return top.map((d, i) => ({
-      percent: Math.min(95, Math.round(Number(d.demand_score) * 0.9)),
-      top: i === 0 ? '42%' : '16%',
-      left: i === 0 ? '43%' : undefined,
-      right: i === 0 ? undefined : '20%',
-      secondary: i > 0,
-      name: d.name,
-    }))
-  }, [districts])
 
   async function setStatus(match: Match, status: MatchStatus) {
     setMatches((prev) => prev.map((m) => (m.id === match.id ? { ...m, status } : m)))
@@ -232,28 +219,12 @@ export function AppPage() {
           </div>
 
           <aside className="outlook-column">
-            <h2>{t('app.outlook')}</h2>
-            <ForecastMap
-              toplineLeft={t('forecast.topline.left')}
-              toplineRight={t('forecast.topline.right')}
-              districts={outlook.map((o, i) => ({
-                name: o.name,
-                top: i === 0 ? '18%' : undefined,
-                bottom: i === 0 ? undefined : '16%',
-                left: i === 0 ? '11%' : '16%',
-              }))}
-              pins={outlook.map(({ percent, top, left, right, secondary }) => ({
-                percent,
-                top,
-                left,
-                right,
-                secondary,
-              }))}
-              metrics={[
-                { value: '14d', label: t('forecast.metric.window') },
-                { value: '37', label: t('forecast.metric.feeds') },
-                { value: '1st', label: t('forecast.metric.contact') },
-              ]}
+            <h2>{t('app.map')}</h2>
+            <MatchMap
+              matches={visibleMatches}
+              listings={listings}
+              districts={districtById}
+              openLabel={t('app.openListing')}
             />
           </aside>
         </section>

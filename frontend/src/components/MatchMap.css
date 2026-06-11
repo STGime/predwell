@@ -1,0 +1,22 @@
+.match-map {
+  width: 100%;
+  height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+/* Keep Leaflet's controls/popup in the product's type + radius language. */
+.match-map .leaflet-container {
+  font-family: var(--font-sans);
+  background: #ecdfc9;
+}
+
+.match-map .leaflet-popup-content-wrapper {
+  border-radius: 16px;
+}
+
+.match-map .leaflet-bar a {
+  color: var(--forest);
+}
