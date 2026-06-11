@@ -13,11 +13,14 @@ export interface District {
 export const FEATURE_KEYS = [
   'parking',
   'balcony',
+  'ebk',
   'furnished',
   'unfurnished',
   'lift',
   'garden',
   'pets_ok',
+  'wg',
+  'no_wg',
   'no_temporary',
   'wbs_ok',
 ] as const
@@ -83,6 +86,8 @@ export interface ListingFlags {
   swap_only?: boolean
   cooperative?: boolean
   commission_free?: boolean
+  ebk?: boolean
+  wg_suitable?: boolean
   deposit_months?: number | null
   fit_note?: string | null
 }
@@ -102,6 +107,8 @@ export interface Match {
 /** Flag keys rendered as chips on match cards, in display order. */
 export const DISPLAY_FLAGS: (keyof ListingFlags)[] = [
   'furnished',
+  'ebk',
+  'wg_suitable',
   'temporary',
   'requires_wbs',
   'swap_only',

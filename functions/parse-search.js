@@ -9,7 +9,7 @@
 // model-invented id). Deployed verify_jwt=false. Degrades to { error } when
 // MISTRAL_API_KEY is absent so the frontend keeps its manual controls.
 
-const FEATURE_KEYS = ['parking', 'balcony', 'furnished', 'unfurnished', 'lift', 'garden', 'pets_ok', 'no_temporary', 'wbs_ok']
+const FEATURE_KEYS = ['parking', 'balcony', 'ebk', 'furnished', 'unfurnished', 'lift', 'garden', 'pets_ok', 'wg', 'no_wg', 'no_temporary', 'wbs_ok']
 const PROXIMITY_KEYS = ['kita', 'school', 'park', 'transit', 'supermarket']
 
 async function mistralChat(apiKey, messages, opts = {}) {
@@ -59,7 +59,7 @@ globalThis.handler = async (req, ctx) => {
     'budget_max (number|null — monthly warm rent ceiling in €), ' +
     'rooms_min (number|null — minimum rooms), ' +
     `districts (array of Berlin district names chosen ONLY from this list: ${districtNames.join(', ')}), ` +
-    `features (object with boolean keys: ${FEATURE_KEYS.join(', ')} — no_temporary means they do NOT want a sublet; wbs_ok means they have a WBS), ` +
+    `features (object with boolean keys: ${FEATURE_KEYS.join(', ')} — ebk = fitted kitchen/Einbauküche; wg = wants a flat suitable for a shared flat (WG-geeignet); no_wg = does NOT want a shared flat / wants a private flat; no_temporary means they do NOT want a sublet/Zwischenmiete; wbs_ok means they have a WBS), ` +
     `proximity (object with boolean keys: ${PROXIMITY_KEYS.join(', ')} — true if they want to be near that; kita = daycare/Kindergarten, transit = U-Bahn/S-Bahn/tram/bus), ` +
     'summary (one short sentence echoing what you understood, in the same language as the input). ' +
     'Only set a boolean true when the text clearly asks for it; omit or false otherwise. Use null for unstated numbers.'

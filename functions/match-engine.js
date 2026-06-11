@@ -41,13 +41,15 @@ function scoreAdjustments(profile, listing) {
   if (wantFeat.no_temporary && enr.temporary) adj -= 25
   if (enr.swap_only) adj -= 40
   if (enr.requires_wbs && !wantFeat.wbs_ok) adj -= 15
+  if (wantFeat.no_wg && enr.wg_suitable) adj -= 20
 
-  // Feature satisfaction (parking/balcony/lift/garden/pets/furnished/unfurnished).
+  // Feature satisfaction (parking/balcony/ebk/lift/garden/pets/furnished/WG).
   let featBonus = 0
-  for (const k of ['parking', 'balcony', 'lift', 'garden', 'pets_ok', 'furnished']) {
+  for (const k of ['parking', 'balcony', 'ebk', 'lift', 'garden', 'pets_ok', 'furnished']) {
     if (wantFeat[k] && enr[k]) featBonus += 4
   }
   if (wantFeat.unfurnished && enr.furnished === false) featBonus += 4
+  if (wantFeat.wg && enr.wg_suitable) featBonus += 4
   adj += Math.min(FEATURE_BONUS_CAP, featBonus)
 
   // Proximity satisfaction.
@@ -98,25 +100,35 @@ function scoreListing(profile, listing, preferredDistricts) {
   return Math.max(0, Math.min(100, score))
 }
 
+// Short-term / holiday / commercial lets are never what a long-term renter
+// wants — exclude them outright by title (no enrichment needed).
+const SHORT_TERM_RE =
+  /übernachtung|ferienwohnung|ferienappartement|monteur|tagesmiete|boardinghouse|serviced|auf zeit|\/\s*nacht|pro nacht|per night|nightly/i
+
 globalThis.handler = async (req, ctx) => {
   const profiles = await ctx.db.sql(
     'SELECT id, user_id, budget_max, rooms_min, district_ids, features FROM search_profiles WHERE is_active = true',
   )
   if (profiles.length === 0) return { ok: true, matched: 0, profiles: 0 }
 
-  // Candidates: active listings first seen in the last 7 days.
-  const listings = await ctx.db.sql(`
-    SELECT id, district_id, price_warm, rooms, first_seen_at, enrichment
-    FROM listings
-    WHERE is_active = true AND first_seen_at > now() - interval '7 days'
-  `)
+  // Candidates: active listings first seen in the last 7 days, minus obvious
+  // short-term/holiday lets.
+  const listings = (
+    await ctx.db.sql(`
+      SELECT id, title, district_id, price_warm, rooms, first_seen_at, enrichment
+      FROM listings
+      WHERE is_active = true AND first_seen_at > now() - interval '7 days'
+    `)
+  ).filter((l) => !SHORT_TERM_RE.test(l.title || ''))
 
   let matched = 0
+  let skipped = 0
   for (const profile of profiles) {
     const districtIds = Array.isArray(profile.district_ids)
       ? profile.district_ids
       : JSON.parse(profile.district_ids || '[]')
     const preferred = new Set(districtIds)
+    const roomsMin = Number(profile.rooms_min)
 
     const existing = await ctx.db.sql(
       'SELECT listing_id FROM matches WHERE search_profile_id = $1',
@@ -126,8 +138,19 @@ globalThis.handler = async (req, ctx) => {
 
     for (const listing of listings) {
       if (already.has(listing.id)) continue
+
+      // Hard filters on the explicit criteria (relevance):
+      //  - rooms: a known room count below the minimum (half-room tolerance)
+      //  - district: when the user picked districts, require a KNOWN district
+      //    in that set — drops wrong-district AND ungeocoded listings.
+      if (listing.rooms != null && Number(listing.rooms) < roomsMin - 0.5) continue
+      if (preferred.size > 0 && (!listing.district_id || !preferred.has(listing.district_id))) continue
+
       const score = scoreListing(profile, listing, preferred)
-      if (score < MIN_SCORE) continue
+      if (score < MIN_SCORE) {
+        skipped++
+        continue
+      }
       await ctx.db.sql(
         `INSERT INTO matches (search_profile_id, listing_id, score) VALUES ($1, $2, $3)`,
         [profile.id, listing.id, score],
@@ -136,6 +159,6 @@ globalThis.handler = async (req, ctx) => {
     }
   }
 
-  ctx.log.info('match engine complete', { profiles: profiles.length, matched })
+  ctx.log.info('match engine complete', { profiles: profiles.length, matched, skipped })
   return { ok: true, profiles: profiles.length, matched }
 }

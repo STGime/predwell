@@ -47,9 +47,11 @@ const CLASSIFY_SYS =
   'commission_free (bool — provisionsfrei), ' +
   'parking (bool — Stellplatz/Garage/Tiefgarage/Parkplatz), ' +
   'balcony (bool — Balkon/Terrasse/Loggia), ' +
+  'ebk (bool — Einbauküche/EBK/fitted kitchen), ' +
   'lift (bool — Aufzug/Fahrstuhl), ' +
   'garden (bool — Garten/Gartennutzung), ' +
   'pets_ok (bool — Haustiere erlaubt), ' +
+  'wg_suitable (bool — WG-geeignet / suitable for a shared flat / Wohngemeinschaft), ' +
   'deposit_months (number|null — Kaution in months if stated), ' +
   'fit_note (string — ONE short English sentence: the single most important thing a renter should know, e.g. "Furnished 6-month sublet" or "Standard unfurnished long-term let"). ' +
   'Base it only on the text; use false/null when unstated. No prose outside the JSON.'

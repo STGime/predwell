@@ -149,7 +149,7 @@ export function AppPage() {
             {activeProfile && (
               <p className="form-note profile-summary">
                 ≤ €{activeProfile.budget_max} · ≥ {activeProfile.rooms_min}{' '}
-                {t('report.bedrooms').toLowerCase()} ·{' '}
+                {t('unit.rooms')} ·{' '}
                 <Link to={`/app/profiles/${activeProfile.id}`}>{t('app.editProfile')}</Link>
               </p>
             )}
@@ -174,7 +174,7 @@ export function AppPage() {
                       <strong>{listing.title}</strong>
                       <p className="form-note">
                         {district?.name ?? '—'} · €{listing.price_warm} · {listing.rooms}{' '}
-                        {t('report.bedrooms').toLowerCase()} · {listing.size_sqm} m²
+                        {t('unit.rooms')} · {listing.size_sqm} m²
                       </p>
                       <p className="form-note match-meta">
                         {t('app.firstSeen', { time: relativeTime(listing.first_seen_at, lang) })}
