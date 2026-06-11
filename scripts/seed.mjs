@@ -21,7 +21,69 @@ const DISTRICTS = [
   ['Tempelhof', 'tempelhof', 52.4667, 13.3857, 14.2, 12.0, 65],
   ['Lichtenberg', 'lichtenberg', 52.5156, 13.499, 13.1, 14.0, 60],
   ['Pankow', 'pankow', 52.5692, 13.4019, 14.5, 11.5, 68],
+  // Broader Berlin coverage — areas renters actually search by.
+  ['Steglitz', 'steglitz', 52.456, 13.332, 16.2, 13.0, 66],
+  ['Zehlendorf', 'zehlendorf', 52.434, 13.259, 17.5, 14.0, 62],
+  ['Wilmersdorf', 'wilmersdorf', 52.487, 13.318, 18.4, 11.0, 74],
+  ['Friedenau', 'friedenau', 52.471, 13.331, 17.8, 10.0, 76],
+  ['Lichterfelde', 'lichterfelde', 52.433, 13.308, 15.8, 14.5, 58],
+  ['Dahlem', 'dahlem', 52.457, 13.286, 19.0, 13.0, 64],
+  ['Schmargendorf', 'schmargendorf', 52.476, 13.296, 17.6, 12.0, 63],
+  ['Gesundbrunnen', 'gesundbrunnen', 52.55, 13.391, 15.0, 8.0, 79],
+  ['Britz', 'britz', 52.448, 13.435, 13.6, 12.5, 61],
+  ['Mariendorf', 'mariendorf', 52.439, 13.387, 13.2, 13.5, 57],
+  ['Buckow', 'buckow', 52.428, 13.453, 12.4, 14.0, 54],
+  ['Spandau', 'spandau', 52.535, 13.198, 12.0, 15.0, 55],
+  ['Reinickendorf', 'reinickendorf', 52.576, 13.335, 12.6, 14.0, 56],
+  ['Tegel', 'tegel', 52.585, 13.283, 12.8, 14.5, 53],
+  ['Treptow', 'treptow', 52.493, 13.456, 15.4, 9.5, 72],
+  ['Adlershof', 'adlershof', 52.435, 13.541, 14.2, 11.0, 64],
+  ['Köpenick', 'koepenick', 52.445, 13.575, 12.2, 14.0, 58],
+  ['Karlshorst', 'karlshorst', 52.484, 13.527, 13.8, 12.0, 62],
+  ['Rummelsburg', 'rummelsburg', 52.498, 13.483, 15.0, 9.0, 70],
+  ['Weißensee', 'weissensee', 52.556, 13.461, 14.6, 10.5, 67],
+  ['Hohenschönhausen', 'hohenschoenhausen', 52.567, 13.503, 11.8, 14.0, 52],
+  ['Marzahn', 'marzahn', 52.545, 13.591, 10.8, 15.0, 50],
+  ['Hellersdorf', 'hellersdorf', 52.536, 13.606, 10.6, 15.0, 49],
 ]
+
+// WG-Gesucht uses Ortsteile and compound borough names; map the variants we
+// see in scraped URLs to a district slug. (Resolver also tries exact + longest
+// substring + alt-prefix strip before falling back to these.)
+const DISTRICT_ALIASES = {
+  kreuzkoelln: 'neukoelln',
+  weiensee: 'weissensee',
+  'maerkisches-viertel': 'reinickendorf',
+  bergmannkiez: 'kreuzberg',
+  halensee: 'wilmersdorf',
+  grunewald: 'wilmersdorf',
+  westend: 'charlottenburg',
+  hermsdorf: 'reinickendorf',
+  wittenau: 'reinickendorf',
+  rosenthal: 'pankow',
+  buch: 'pankow',
+  'baumschulenweg': 'treptow',
+  'niederschoeneweide': 'treptow',
+  'oberschoeneweide': 'treptow',
+  altglienicke: 'treptow',
+  bohnsdorf: 'treptow',
+  gruenau: 'koepenick',
+  friedrichshagen: 'koepenick',
+  friedrichsfelde: 'lichtenberg',
+  mahlsdorf: 'hellersdorf',
+  kaulsdorf: 'hellersdorf',
+  biesdorf: 'marzahn',
+  lankwitz: 'steglitz',
+  mariendorf: 'mariendorf',
+  lichtenrade: 'tempelhof',
+  marienfelde: 'tempelhof',
+  rudow: 'neukoelln',
+  gropiusstadt: 'neukoelln',
+  siemensstadt: 'spandau',
+  hakenfelde: 'spandau',
+  frohnau: 'reinickendorf',
+}
+
 
 const STREETS = {
   mitte: ['Torstraße', 'Ackerstraße', 'Linienstraße'],
@@ -62,11 +124,8 @@ async function count(sql) {
   return Number(res.rows?.[0]?.n ?? 0)
 }
 
-// --- Districts ---
-if ((await count('SELECT count(*) AS n FROM districts')) >= DISTRICTS.length) {
-  console.log('Districts already seeded; skipping.')
-} else {
-  console.log('Seeding districts...')
+// --- Districts (insert any missing slugs) ---
+{
   const existing = new Set(
     (await api.sql('SELECT slug FROM districts')).rows?.map((r) => r.slug) ?? [],
   )
@@ -81,37 +140,48 @@ if ((await count('SELECT count(*) AS n FROM districts')) >= DISTRICTS.length) {
       demand_score: demand,
     }),
   )
-  await insertAll('districts', rows)
+  if (rows.length) {
+    console.log(`Seeding ${rows.length} new district(s)...`)
+    await insertAll('districts', rows)
+  } else {
+    console.log('Districts already seeded; skipping.')
+  }
 }
 
 const districtRows = (
   await api.sql('SELECT id, slug, avg_rent_sqm, listing_velocity_hours, demand_score FROM districts')
 ).rows
 
-// --- Listing history (90 days per district) ---
-if ((await count('SELECT count(*) AS n FROM listing_history')) > 0) {
-  console.log('Listing history already seeded; skipping.')
-} else {
-  console.log('Seeding 90 days of listing history...')
+// --- Listing history: generate for any district that has none ---
+{
+  const withHistory = new Set(
+    (await api.sql('SELECT DISTINCT district_id FROM listing_history')).rows?.map((r) => r.district_id) ?? [],
+  )
+  const needHistory = districtRows.filter((d) => !withHistory.has(d.id))
+  if (needHistory.length === 0) {
+    console.log('Listing history already seeded; skipping.')
+  } else {
+    console.log(`Seeding 90 days of history for ${needHistory.length} district(s)...`)
   const rows = []
   const today = new Date()
-  for (const d of districtRows) {
-    const rand = mulberry32([...d.slug].reduce((a, c) => a + c.charCodeAt(0), 0))
-    for (let daysAgo = 90; daysAgo >= 1; daysAgo--) {
-      const date = new Date(today)
-      date.setDate(date.getDate() - daysAgo)
-      const base = Number(d.demand_score) / 18
-      const weekendDip = date.getDay() === 0 || date.getDay() === 6 ? 0.6 : 1
-      rows.push({
-        district_id: d.id,
-        date: date.toISOString().slice(0, 10),
-        new_listings: Math.max(0, Math.round(base * weekendDip * (0.6 + rand() * 0.9))),
-        avg_price_warm: Number((Number(d.avg_rent_sqm) * 62 * (0.92 + rand() * 0.16)).toFixed(2)),
-        median_hours_live: Number((Number(d.listing_velocity_hours) * (0.7 + rand() * 0.6)).toFixed(1)),
-      })
+    for (const d of needHistory) {
+      const rand = mulberry32([...d.slug].reduce((a, c) => a + c.charCodeAt(0), 0))
+      for (let daysAgo = 90; daysAgo >= 1; daysAgo--) {
+        const date = new Date(today)
+        date.setDate(date.getDate() - daysAgo)
+        const base = Number(d.demand_score) / 18
+        const weekendDip = date.getDay() === 0 || date.getDay() === 6 ? 0.6 : 1
+        rows.push({
+          district_id: d.id,
+          date: date.toISOString().slice(0, 10),
+          new_listings: Math.max(0, Math.round(base * weekendDip * (0.6 + rand() * 0.9))),
+          avg_price_warm: Number((Number(d.avg_rent_sqm) * 62 * (0.92 + rand() * 0.16)).toFixed(2)),
+          median_hours_live: Number((Number(d.listing_velocity_hours) * (0.7 + rand() * 0.6)).toFixed(1)),
+        })
+      }
     }
+    await insertAll('listing_history', rows)
   }
-  await insertAll('listing_history', rows)
 }
 
 // --- Seed listings (5 per district) ---

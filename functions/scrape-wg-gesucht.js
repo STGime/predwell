@@ -30,6 +30,33 @@ function normalizeSlug(s) {
     .replaceAll('ß', 'ss')
 }
 
+// WG-Gesucht uses Ortsteile and compound borough names; map the variants we
+// can't resolve directly to a known district slug.
+const DISTRICT_ALIASES = {
+  kreuzkoelln: 'neukoelln', weiensee: 'weissensee', 'maerkisches-viertel': 'reinickendorf',
+  bergmannkiez: 'kreuzberg', halensee: 'wilmersdorf', grunewald: 'wilmersdorf', westend: 'charlottenburg',
+  hermsdorf: 'reinickendorf', wittenau: 'reinickendorf', rosenthal: 'pankow', buch: 'pankow',
+  baumschulenweg: 'treptow', niederschoeneweide: 'treptow', oberschoeneweide: 'treptow',
+  altglienicke: 'treptow', bohnsdorf: 'treptow', gruenau: 'koepenick', friedrichshagen: 'koepenick',
+  friedrichsfelde: 'lichtenberg', mahlsdorf: 'hellersdorf', kaulsdorf: 'hellersdorf', biesdorf: 'marzahn',
+  lankwitz: 'steglitz', lichtenrade: 'tempelhof', marienfelde: 'tempelhof', rudow: 'neukoelln',
+  gropiusstadt: 'neukoelln', siemensstadt: 'spandau', hakenfelde: 'spandau', frohnau: 'reinickendorf',
+}
+
+// Resolve a raw WG-Gesucht area to a district slug we know:
+// exact → strip alt-/altstadt- prefix → longest known-slug substring → alias.
+function resolveDistrictSlug(raw, knownSlugs) {
+  let s = normalizeSlug(raw).replace(/^(alt|altstadt)-/, '')
+  if (knownSlugs.has(s)) return s
+  // Longest known slug that appears as a token in the (possibly compound) name.
+  let best = null
+  for (const k of knownSlugs) {
+    if ((s === k || s.includes(k) || k.includes(s)) && (!best || k.length > best.length)) best = k
+  }
+  if (best) return best
+  return DISTRICT_ALIASES[s] ?? null
+}
+
 function decodeEntities(s) {
   return s
     .replaceAll('&euro;', '€')
@@ -69,6 +96,7 @@ function parseWgGesucht(html) {
       sourceId: `wg-${id}`,
       title: decodeEntities(title),
       url: `https://www.wg-gesucht.de${href}`,
+      districtRaw,
       districtSlug: normalizeSlug(districtRaw),
       addressText: addressText ? `${decodeEntities(addressText)}, Berlin` : null,
       priceWarm: priceWarm ? Number(priceWarm) : null,
@@ -83,15 +111,17 @@ function parseWgGesucht(html) {
 async function upsertListings(ctx, rows, districtBySlug) {
   let inserted = 0
   let refreshed = 0
+  const knownSlugs = new Set(districtBySlug.keys())
   for (const row of rows) {
-    // Match the WG-Gesucht district name against our slugs (e.g. URL slug
-    // "neukoelln" or "prenzlauer-berg" both resolve directly).
-    const district = districtBySlug.get(row.districtSlug) ?? null
-    const existing = await ctx.db.sql('SELECT id FROM listings WHERE source_id = $1', [row.sourceId])
+    // Resolve the WG-Gesucht area (incl. compound borough names) to a district.
+    const slug = resolveDistrictSlug(row.districtRaw || row.districtSlug, knownSlugs)
+    const district = slug ? districtBySlug.get(slug) : null
+    const existing = await ctx.db.sql('SELECT id, district_id FROM listings WHERE source_id = $1', [row.sourceId])
     if (existing.length > 0) {
+      // Backfill district on refresh if it was previously unmapped.
       await ctx.db.sql(
-        'UPDATE listings SET last_seen_at = now(), price_warm = $2, is_active = true WHERE id = $1',
-        [existing[0].id, row.priceWarm],
+        'UPDATE listings SET last_seen_at = now(), price_warm = $2, is_active = true, district_id = COALESCE(district_id, $3) WHERE id = $1',
+        [existing[0].id, row.priceWarm, district?.id ?? null],
       )
       refreshed++
     } else {
