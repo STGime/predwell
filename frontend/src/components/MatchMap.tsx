@@ -15,6 +15,8 @@ interface Props {
   listings: Map<string, Listing>
   districts: Map<string, District>
   openLabel: string
+  selectedId: string | null
+  onSelect: (id: string | null) => void
 }
 
 // Deterministic small offset so multiple pins that fall back to the same
@@ -49,10 +51,19 @@ function pinColor(score: number): string {
   return '#a44720' // signal-dark — ok
 }
 
-export function MatchMap({ matches, listings, districts, openLabel }: Props) {
+interface Pin {
+  marker: L.CircleMarker
+  latlng: [number, number]
+  base: string
+}
+
+export function MatchMap({ matches, listings, districts, openLabel, selectedId, onSelect }: Props) {
   const elRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
+  const pinsRef = useRef<Map<string, Pin>>(new Map())
+  const onSelectRef = useRef(onSelect)
+  onSelectRef.current = onSelect
 
   // Init once.
   useEffect(() => {
@@ -70,12 +81,13 @@ export function MatchMap({ matches, listings, districts, openLabel }: Props) {
     }
   }, [])
 
-  // Re-render markers when matches/listings change.
+  // Rebuild markers when matches/listings change.
   useEffect(() => {
     const map = mapRef.current
     const layer = layerRef.current
     if (!map || !layer) return
     layer.clearLayers()
+    pinsRef.current.clear()
     const points: [number, number][] = []
     for (const m of matches) {
       const listing = listings.get(m.listing_id)
@@ -83,11 +95,12 @@ export function MatchMap({ matches, listings, districts, openLabel }: Props) {
       const pos = position(listing, districts)
       if (!pos) continue
       points.push(pos)
+      const base = pinColor(m.score)
       const marker = L.circleMarker(pos, {
         radius: 9,
         color: '#fffaf1',
         weight: 2,
-        fillColor: pinColor(m.score),
+        fillColor: base,
         fillOpacity: 0.95,
       })
       const link = listing.url
@@ -100,11 +113,33 @@ export function MatchMap({ matches, listings, districts, openLabel }: Props) {
            <span style="color:#647068">${locationLabel(listing, districts)}</span><br/>${link}
          </div>`,
       )
+      marker.on('click', () => onSelectRef.current(m.id))
       layer.addLayer(marker)
+      pinsRef.current.set(m.id, { marker, latlng: pos, base })
     }
     if (points.length) map.fitBounds(points, { padding: [40, 40], maxZoom: 14 })
     else map.setView(BERLIN_CENTER, 11)
   }, [matches, listings, districts, openLabel])
+
+  // Highlight + center the selected match's marker.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    for (const [id, pin] of pinsRef.current) {
+      const isSel = id === selectedId
+      pin.marker.setStyle({
+        radius: isSel ? 14 : 9,
+        weight: isSel ? 4 : 2,
+        fillColor: isSel ? '#f07a3e' : pin.base,
+      })
+      if (isSel) pin.marker.bringToFront()
+    }
+    const sel = selectedId ? pinsRef.current.get(selectedId) : null
+    if (sel) {
+      map.setView(sel.latlng, Math.max(map.getZoom(), 14), { animate: true })
+      sel.marker.openPopup()
+    }
+  }, [selectedId, matches])
 
   return <div className="match-map" ref={elRef} aria-label="Map of your matches" />
 }

@@ -73,6 +73,14 @@
   background: rgba(255, 250, 241, 0.72);
   border: 1px solid var(--line);
   border-radius: 20px;
+  cursor: pointer;
+  transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+}
+
+.match-card.is-selected {
+  border-color: var(--signal);
+  background: var(--paper-strong);
+  box-shadow: 0 0 0 3px rgba(240, 122, 62, 0.18);
 }
 
 .match-score {

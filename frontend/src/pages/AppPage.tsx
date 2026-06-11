@@ -40,6 +40,7 @@ export function AppPage() {
   const [districts, setDistricts] = useState<District[]>([])
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [loaded, setLoaded] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const reload = useCallback(async () => {
     const [profileRows, districtRows, sub] = await Promise.all([
@@ -79,6 +80,12 @@ export function AppPage() {
   )
 
   const districtById = useMemo(() => new Map(districts.map((d) => [d.id, d])), [districts])
+
+  // Keep the selected card in view when a map marker is clicked.
+  useEffect(() => {
+    if (!selectedId) return
+    document.getElementById(`match-${selectedId}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [selectedId])
 
   async function setStatus(match: Match, status: MatchStatus) {
     setMatches((prev) => prev.map((m) => (m.id === match.id ? { ...m, status } : m)))
@@ -153,7 +160,12 @@ export function AppPage() {
                 if (!listing) return null
                 const district = listing.district_id ? districtById.get(listing.district_id) : null
                 return (
-                  <li className="match-card" key={m.id}>
+                  <li
+                    className={`match-card${selectedId === m.id ? ' is-selected' : ''}`}
+                    key={m.id}
+                    id={`match-${m.id}`}
+                    onClick={() => setSelectedId(m.id)}
+                  >
                     <div className="match-score" aria-label={`${m.score}% ${t('app.score')}`}>
                       {m.score}%
                     </div>
@@ -225,6 +237,8 @@ export function AppPage() {
               listings={listings}
               districts={districtById}
               openLabel={t('app.openListing')}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
             />
           </aside>
         </section>
