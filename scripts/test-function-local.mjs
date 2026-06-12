@@ -6,8 +6,8 @@
 //
 // Usage: node scripts/test-function-local.mjs functions/free-report.js '{"budget":"€1,500"}'
 
-import { readFileSync } from 'node:fs'
 import { api } from './lib/admin.mjs'
+import { assembleFunction } from './lib/assemble-fn.mjs'
 
 const [file, payload] = process.argv.slice(2)
 if (!file) {
@@ -50,7 +50,7 @@ const ctx = {
 }
 void mockRows
 
-const code = readFileSync(file, 'utf8')
+const code = assembleFunction(file) // resolves //#include _ingest-core.js
 new Function(code)() // mirrors the runner: assigns globalThis.handler
 
 const req = new Request('http://localhost/fn', {

@@ -170,7 +170,10 @@ export function AppPage() {
                       {m.score}%
                     </div>
                     <div className="match-body">
-                      <strong>{listing.title}</strong>
+                      <strong>
+                        {listing.title}
+                        <span className="source-chip">{t(`src.${listing.source}` as TranslationKey)}</span>
+                      </strong>
                       <p className="form-note">
                         {district?.name ?? '—'} · €{listing.price_warm} · {listing.rooms}{' '}
                         {t('unit.rooms')} · {listing.size_sqm} m²

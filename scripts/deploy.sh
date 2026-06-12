@@ -23,15 +23,15 @@ fi
 
 if [[ "$STEP" == "all" || "$STEP" == "functions" ]]; then
   echo "==> Deploying edge functions"
-  eurobase edge-functions deploy free-report      -f functions/free-report.js      --no-verify-jwt
-  eurobase edge-functions deploy parse-search     -f functions/parse-search.js     --no-verify-jwt
-  eurobase edge-functions deploy scrape-wg-gesucht -f functions/scrape-wg-gesucht.js --no-verify-jwt
-  eurobase edge-functions deploy match-engine     -f functions/match-engine.js     --no-verify-jwt
-  eurobase edge-functions deploy enrich-listings  -f functions/enrich-listings.js  --no-verify-jwt
-  eurobase edge-functions deploy notify-matches   -f functions/notify-matches.js   --no-verify-jwt
-  eurobase edge-functions deploy daily-digest     -f functions/daily-digest.js     --no-verify-jwt
-  eurobase edge-functions deploy create-checkout  -f functions/create-checkout.js
-  eurobase edge-functions deploy mollie-webhook   -f functions/mollie-webhook.js   --no-verify-jwt
+  # deploy-fn.mjs resolves //#include directives (shared _ingest-core.js) and
+  # deploys via the platform API with $EUROBASE_PAT (the CLI session expires
+  # often and doesn't handle includes). verify_jwt is off for all of these.
+  for fn in free-report parse-search scrape-wg-gesucht ingest-inberlinwohnen \
+            ingest-openimmo match-engine enrich-listings notify-matches \
+            daily-digest mollie-webhook; do
+    node scripts/deploy-fn.mjs "$fn"
+  done
+  node scripts/deploy-fn.mjs create-checkout --verify-jwt  # needs ctx.user
 
   echo "==> Provisioning schedules"
   node scripts/setup-schedules.mjs

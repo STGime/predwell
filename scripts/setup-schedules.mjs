@@ -34,6 +34,16 @@ const SCHEDULES = [
     },
   },
   {
+    name: 'ingest-inberlinwohnen',
+    spec: {
+      functionName: 'ingest-inberlinwohnen',
+      // Berlin municipal-housing aggregator — hourly, polite, block-aware.
+      cron: '0 * * * *',
+      timezone: 'UTC',
+      description: 'Ingest Berlin public-housing flats from inberlinwohnen.de',
+    },
+  },
+  {
     name: 'match-engine',
     spec: {
       functionName: 'match-engine',

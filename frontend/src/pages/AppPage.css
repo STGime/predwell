@@ -101,6 +101,22 @@
   font-size: 1.02rem;
 }
 
+.source-chip {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  vertical-align: middle;
+  color: var(--forest);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(207, 231, 212, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
 .match-body .form-note {
   margin-top: 4px;
 }

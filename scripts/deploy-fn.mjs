@@ -4,9 +4,9 @@
 //
 // Usage: EUROBASE_PAT=eb_pat_... node scripts/deploy-fn.mjs <name> [--verify-jwt]
 
-import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { assembleFunction } from './lib/assemble-fn.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const PAT = process.env.EUROBASE_PAT
@@ -18,23 +18,25 @@ const name = process.argv[2]
 const verifyJwt = process.argv.includes('--verify-jwt')
 if (!name) throw new Error('usage: deploy-fn.mjs <name> [--verify-jwt]')
 
-const code = readFileSync(join(root, 'functions', `${name}.js`), 'utf8')
+const code = assembleFunction(join(root, 'functions', `${name}.js`))
 const headers = { Authorization: `Bearer ${PAT}`, 'Content-Type': 'application/json' }
 
-// Try update (PUT); fall back to create (POST) if it doesn't exist yet.
+// Try update (PUT); fall back to create (POST) if it doesn't exist yet
+// (the gateway returns 404 or a 400 "no rows in result set" for an unknown fn).
 let res = await fetch(`${BASE}/platform/projects/${PID}/functions/${name}`, {
   method: 'PUT',
   headers,
   body: JSON.stringify({ code, verify_jwt: verifyJwt }),
 })
-if (res.status === 404) {
+let body = await res.text()
+if (!res.ok && (res.status === 404 || /no rows|not found/i.test(body))) {
   res = await fetch(`${BASE}/platform/projects/${PID}/functions`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ name, code, verify_jwt: verifyJwt }),
   })
+  body = await res.text()
 }
-const body = await res.text()
 if (!res.ok) {
   console.error(`✗ ${name}: ${res.status} ${body.slice(0, 200)}`)
   process.exit(1)
