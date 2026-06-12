@@ -3,14 +3,15 @@
 // Predwell as a "target", they POST the same package here and we receive the
 // listing directly (often before the portals). source = 'openimmo'.
 //
-// Auth: the Eurobase gateway strips custom headers + the query string before
-// proxying to the runner (only the body + Content-Type survive), so the feed
-// key must ride INSIDE the OpenImmo XML. Partners set their transfer user
-// (`<uebertragung benutzer="…">`) to their Predwell feed key, or add a
-// `<predwell_feed_key>…</predwell_feed_key>` element. We sha256 it and match an
-// active row in feed_keys. Body is OpenImmo XML (the runner sandbox has no XML
-// parser, so we extract core fields with regex). ZIP+images is a later
-// iteration; this MVP ingests the text fields + exact geo coordinates.
+// Auth (standard): the partner sends their Predwell feed key as the
+// `X-Feed-Key` header (or `?key=` query param). We sha256 it and match an
+// active row in feed_keys. As a fallback for push tools that can only set the
+// OpenImmo transfer user, the key may also ride in the XML
+// (`<uebertragung benutzer="…">` or `<predwell_feed_key>…`).
+//
+// Body is OpenImmo XML (the runner sandbox has no XML parser, so we extract
+// core fields with regex). ZIP+images is a later iteration; this MVP ingests
+// the text fields + exact geo coordinates.
 //#include _ingest-core.js
 
 const SOURCE = 'openimmo'
@@ -99,12 +100,14 @@ globalThis.handler = async (req, ctx) => {
   const xml = await req.text()
   if (!xml) return jsonResponse({ error: 'empty body' }, 400)
 
-  // Feed key from the XML (gateway strips headers/query — see header comment).
+  // Feed key: X-Feed-Key header (preferred) → ?key= → in-XML fallback.
   const key =
+    req.headers.get('x-feed-key') ||
+    new URL(req.url).searchParams.get('key') ||
     xml.match(/<uebertragung\b[^>]*\bbenutzer="([^"]+)"/i)?.[1] ||
     tag(xml, 'predwell_feed_key') ||
     ''
-  if (!key) return jsonResponse({ error: 'missing feed key (set <uebertragung benutzer> or <predwell_feed_key>)' }, 401)
+  if (!key) return jsonResponse({ error: 'missing feed key (send X-Feed-Key header or ?key=)' }, 401)
   const keyHash = await sha256hex(key)
   const feed = await ctx.db.sql('SELECT id, name FROM feed_keys WHERE key_hash = $1 AND active = true', [keyHash])
   if (feed.length === 0) return jsonResponse({ error: 'invalid feed key' }, 401)
