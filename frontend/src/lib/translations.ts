@@ -4,6 +4,7 @@ export const translations = {
   // Header
   'nav.tagline': { en: 'Berlin renter intelligence', de: 'Berliner Mieter-Intelligenz' },
   'nav.dashboard': { en: 'Dashboard', de: 'Dashboard' },
+  'nav.login': { en: 'Log in', de: 'Anmelden' },
 
   // Landing hero
   'hero.eyebrow': { en: 'Agentic AI · real-time apartment alerts for Berlin', de: 'Agentic AI · Echtzeit-Wohnungsalerts für Berlin' },

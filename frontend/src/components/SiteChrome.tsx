@@ -35,7 +35,9 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
               {t('nav.dashboard')}
             </Link>
           ) : (
-            <div className="nav-note">{t('nav.tagline')}</div>
+            <Link className="nav-note" to="/login">
+              {t('nav.login')}
+            </Link>
           ))}
         <LangToggle />
       </div>
