@@ -111,7 +111,12 @@ const SHORT_TERM_RE =
 // features.wg). The room count on these is the whole flat's, so they'd otherwise
 // sneak into a "3 rooms" search.
 const WG_ROOM_RE =
-  /wg-?zimmer|zimmer in (einer |der )?\d|zimmer in (einer |der )?wg|private bedroom|private room|möbliertes zimmer|zimmer frei|zimmer ab \d/i
+  /wg-?zimmer|zimmer in (einer |der )?(\d|wg)|möbliertes zimmer|zimmer frei|zimmer ab \d|mitbewohner|wohngemeinschaft|private (bed)?room|room in (a |an )?(shared|wg)|shared (apartment|flat|room)|flat[ -]?share|room for rent|furnished room/i
+
+// A whole flat has ~18–35 m² per room; a WG-room listing carries the FLAT's
+// room count but the single room's size, so m²/room collapses (e.g. 10 m² /
+// "3 rooms" ≈ 3). Below this it's a room, not a flat — language-independent.
+const MIN_SQM_PER_ROOM = 12
 
 // Hard budget cap: warm rent up to 10% over the stated max (cold/warm slack).
 const BUDGET_TOLERANCE = 1.1
@@ -163,8 +168,15 @@ globalThis.handler = async (req, ctx) => {
       if (listing.price_warm != null && Number(listing.price_warm) > profile.budget_max * BUDGET_TOLERANCE) continue
       if (listing.rooms != null && Number(listing.rooms) < roomsMin - 0.5) continue
       if (preferred.size > 0 && (!listing.district_id || !preferred.has(listing.district_id))) continue
-      // WG room (a single room in a shared flat) — exclude unless WG wanted.
-      if (!wantsWg && WG_ROOM_RE.test(listing.title || '')) continue
+      // WG room (a single room in a shared flat) — by title, or by an
+      // implausibly small m²/room ratio. Excluded unless WG is wanted.
+      const sqmPerRoom =
+        listing.size_sqm != null && Number(listing.rooms) > 0
+          ? Number(listing.size_sqm) / Number(listing.rooms)
+          : null
+      const looksLikeRoom =
+        WG_ROOM_RE.test(listing.title || '') || (sqmPerRoom != null && sqmPerRoom < MIN_SQM_PER_ROOM)
+      if (!wantsWg && looksLikeRoom) continue
 
       const score = scoreListing(profile, listing, preferred)
       if (score < MIN_SCORE) continue
