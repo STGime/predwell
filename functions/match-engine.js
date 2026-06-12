@@ -100,11 +100,18 @@ function scoreListing(profile, listing, preferredDistricts) {
   return Math.max(0, Math.min(100, score))
 }
 
-// Short-term / holiday / single-room lets are not what a long-term flat seeker
-// wants — exclude them outright by title (no enrichment needed). Covers nightly
-// rentals, sublets (Zwischen-/Untermiete), and single rooms in a shared flat.
+// Short-term / holiday / sublet lets are never what a long-term flat seeker
+// wants — excluded outright by title for everyone (no enrichment needed).
 const SHORT_TERM_RE =
-  /übernachtung|ferienwohnung|ferienappartement|monteur|tagesmiete|boardinghouse|serviced|auf zeit|\/\s*nacht|pro nacht|per night|nightly|zwischenmiete|untermiete|private bedroom|private room|wg-?zimmer|zimmer in|möbliertes zimmer/i
+  /übernachtung|ferienwohnung|ferienappartement|monteur|tagesmiete|boardinghouse|serviced|auf zeit|\/\s*nacht|pro nacht|per night|nightly|zwischenmiete|untermiete/i
+
+// A single room IN a shared flat (a WG room), not a whole apartment. Whoever
+// searches a multi-room flat almost never wants one of these, so they're
+// excluded BY DEFAULT and only included when the profile opts in ("WG-friendly",
+// features.wg). The room count on these is the whole flat's, so they'd otherwise
+// sneak into a "3 rooms" search.
+const WG_ROOM_RE =
+  /wg-?zimmer|zimmer in (einer |der )?\d|zimmer in (einer |der )?wg|private bedroom|private room|möbliertes zimmer|zimmer frei|zimmer ab \d/i
 
 // Hard budget cap: warm rent up to 10% over the stated max (cold/warm slack).
 const BUDGET_TOLERANCE = 1.1
@@ -133,6 +140,8 @@ globalThis.handler = async (req, ctx) => {
       : JSON.parse(profile.district_ids || '[]')
     const preferred = new Set(districtIds)
     const roomsMin = Number(profile.rooms_min)
+    // WG rooms are excluded unless the profile explicitly wants WG.
+    const wantsWg = asObj(asObj(profile.features).features).wg === true
 
     // Re-evaluate the whole candidate set against the (possibly just-edited)
     // profile: add newly-qualifying listings, refresh scores on existing
@@ -154,6 +163,8 @@ globalThis.handler = async (req, ctx) => {
       if (listing.price_warm != null && Number(listing.price_warm) > profile.budget_max * BUDGET_TOLERANCE) continue
       if (listing.rooms != null && Number(listing.rooms) < roomsMin - 0.5) continue
       if (preferred.size > 0 && (!listing.district_id || !preferred.has(listing.district_id))) continue
+      // WG room (a single room in a shared flat) — exclude unless WG wanted.
+      if (!wantsWg && WG_ROOM_RE.test(listing.title || '')) continue
 
       const score = scoreListing(profile, listing, preferred)
       if (score < MIN_SCORE) continue
